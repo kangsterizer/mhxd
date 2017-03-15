@@ -1,0 +1,336 @@
+#!/bin/sh
+
+. .common
+
+#################################################################
+#
+# name:    lx (formatted caching ls)
+# version: 2.2
+# date:    August 1, 2002
+# author:  Devin Teske
+#
+# parameters:
+#    -r   refresh the cache files
+#    -w   maximum width of output (ex. -w 100) in characters
+#    -h   help on parameters
+#    -s   save the width (use in conjunction with -w)
+#
+# Description:
+#    It lists the contents of the directory set in the config
+#    section of this script.
+#
+#    Since output formatting takes time and cpu cycles, once
+#    the output has been formatted once, it caches the
+#    the respective directory listing, and the compiled output.
+#    Upon next execution, if the current directory listing
+#    yields the same list of names as the last cached version,
+#    the output is retrieved from a stored cache file.
+#
+#    Any files not marked as desired using the key set in the
+#    config section of the script will not be displayed.
+#
+# Requirements:
+#    The Bourne Shell
+#    BSD compatible stream editor (`sed')
+#    BSD compatible `echo'
+#    BSD compatible `ls'
+#    BSD compatible `grep'
+#    Any form of the formatting utility `awk'
+#    The word count utility (`wc')
+#    The character translation utility (`tr')
+#    The line utility `tail'
+#
+#    each one of these items should be in your execution path
+#    with the exception of The Bourne Shell (/bin/sh).
+#
+# Details:
+#    GNU versions of the BSD compatible utilities that are
+#    required, are acceptable but not necessary. As this script
+#    limits the use of GNU features to remain compatible with
+#    BSD copies of the command line utilities.
+#
+#    If a name of an item contains the search key, then it will
+#    seem to mysteriously disappear in the results. This is not
+#    a bug but more aptly a shortcut.
+#
+#################################################################
+
+# script prefers bash
+[ -f /bin/bash ] && SHELL=/bin/bash
+
+######################## Configure options
+
+# output header line
+head="List of server accounts:";
+
+# where to store the cache test
+incache="./etc/.lxincache";
+
+# where to store the cached response for output
+outcache="./etc/.lxoutcache";
+
+# width cache (the saved width)
+widthcache="./etc/.lxwcache";
+
+# maximum size in characters the output may appear
+# the wider it is, the more columns there will be
+# default: 45 (can be adjusted with -w parameter)
+rowsize=45;
+
+# key to search for (for directories, use `/'; for
+# executables, use `*'; for symlinks, use `@'; for
+# other, leave this blank)
+key="/";
+
+# text to put before each entry in the display
+prefix="";
+
+# text to put after each entry in the display
+suffix="";
+
+######################## Begin Script
+
+# set our local variables
+cnl=0; tmp=0; col=0; cached=0; pad=""; output=`printf "\r¥"`;
+
+# obtain the name of the script
+exr=`echo $0 | tr '/' '\n' | tail -n 1`;
+
+######################## Custom Check
+
+# first check if the user calling this script has the
+# privelege to read accounts (setting cannot be achieved
+# by /access ; must be in their account file)
+if [ -x bin/acctedit -a "$ACCOUNT" != "" ]; then
+# read_users (16)
+   if bin/acctedit -t 16 accounts/$ACCOUNT/UserData; then
+      read_users=1;
+   else
+      read_users=0;
+   fi
+   if [ $read_users -eq 0 ]; then
+      printf "\r$exr: insufficient priveleges";
+      exit 0;
+   fi
+elif [ "$ACCOUNT" != "" -a "$ACCOUNT" != "admin" ]; then
+   # operating on a new enough shxd server
+   printf "\r$exr: you are not logged in as admin";
+   printf "\r$exr: permission denied";
+   exit 0;
+fi
+
+########################
+
+# check for the -h parameter to issue help
+if [ "`echo "$@" | grep "\-h"`" != "" ]; then
+   printf "\r\rsyntax: $exr [-r] [-h] [-w size]\
+\r  -r        refresh the listing (un-cache it)\
+\r  -h        display this text\
+\r  -w size   adjust the width of the output\
+\r  -s        save the set width (use with -w)";
+   exit 0;
+fi
+
+nocache=0; refresh=0;
+
+# check if the directory exists
+if [ ! -e $accountsdir ]; then
+   printf "\r$exr: $accountsdir: No such directory";
+   exit 0;
+elif [ ! -d $accountsdir ]; then
+   printf "\r$exr: $accountsdir: Not a directory";
+   exit 0;
+fi
+
+# check if there's an admin set width cache
+# we check before checking for the -w parameter so
+# that the paremeter can override the cache preset
+if [ -f $widthcache ]; then
+   rowsize=`cat $widthcache | head -n 1`;
+fi
+
+# check for the -w parameter and a valid argument
+if [ "`echo "$@" | grep "\-w"`" != "" ]; then
+   gnv=0; wv=""; param="";
+   # get the value for -w
+   for param in $@; do
+      if [ $gnv -eq 1 ]; then
+         wv=$param;
+         gnv=0;
+      fi
+      [ "$param" = "-w" ] && gnv=1;
+   done
+   # check if there was a value for it
+   if [ "$wv" = "" ]; then
+      printf "\r$exr: -w: requires a value";
+      exit 0;
+   fi
+   # test if it is a valid numeral
+   test=`expr $wv + 0 2> /dev/null`;
+   if [ "$test" = "" ]; then
+      printf "\r$exr: $wv: not a numerical value";
+      exit 0;
+   fi
+   if [ $rowsize -ne $wv ]; then
+      rowsize=$wv;
+      refresh=1;
+      nocache=1;
+   fi
+   # check for the -s option
+   if [ "`echo $@ | grep "\-s"`" != "" ]; then
+      # only admin should be able to save the width
+      if [ -x bin/acctedit -a "$ACCOUNT" != "" ]; then
+      # modify_users (17)
+	 if bin/acctedit -t 17 accounts/$ACCOUNT/UserData; then
+	    modusers=1;
+	 else
+	    modusers=0;
+	 fi
+         if [ $modusers -eq 0 ]; then
+            printf "\r$exr: insufficient priveleges";
+            exit 0;
+         fi
+      else
+         if [ "$ACCOUNT" != "" -a "$ACCOUNT" != "admin" ]; then
+            printf "\r$exr: you are not logged in as admin";
+            printf "\r$exr: permission denied";
+            exit 0;
+         fi
+      fi
+      echo $wv > $widthcache;
+      nocache=0;
+   fi
+fi
+
+# check for the -r parameter to refresh
+[ "`echo $@ | grep "\-r"`" != "" ] && refresh=1;
+
+# obtain the contents of the directory
+contents=`ls -CF1 $accountsdir | grep "$key\$" | tr -d "$key"`;
+
+# so that accounts can contain spaces in them
+IFS="
+";
+
+######################## Custom Filter
+
+# cycle through the directories of each account
+# and make sure that a UserData file exists in it
+# (constitution of a valid account)
+for acct in $contents; do
+   # avoid naming accounts with spaces in them
+   [ -f accounts/$acct/UserData ] && nc=`printf "$nc\n$acct"`;
+done
+contents="$nc";
+
+########################
+
+# don't look for cache when passed -r
+if [ $refresh -ne 1 ]; then
+
+# check for our cache file
+if [ -f $incache ]; then
+   cache=`cat $incache`;
+   # compare last directory listing to current
+   # one to see if we can use a cached response
+   if [ "$contents" = "$cache" ]; then
+      cached=1;
+   fi
+fi
+
+# re-cache the directory contents
+[ $nocache -ne 1 ] && echo "$contents" > $incache;
+
+# check for the output cache file
+if [ $cached -eq 1 -a -f $outcache ]; then
+   # grab the cache and output it, then exit
+   output=`cat $outcache`;
+   printf "\r$output";
+   exit 0;
+fi
+
+# end cache exclusion for -r parameter
+fi
+
+# if we had a cached copy, we would have exited by now.
+# compile the output, then cache it so we can re-use it.
+# we want to use cache, because on slower processors,
+# this takes a long time
+
+# set the introduction line
+output=`printf "$output $head\r  "`;
+
+# find the longest item name
+for item in $contents; do
+   tcn=`echo $item | wc -c | tr -d ' '`;
+   [ $tcn -gt $cnl ] && (( cnl = tcn - 1));
+done
+
+# sizes of prefix and suffix
+psz=`echo -n "$prefix" | wc -c | tr -d ' '`;
+ssz=`echo -n "$suffix" | wc -c | tr -d ' '`;
+
+# calculate how many columns can fit in the given row size
+(( cnl = cnl + 1 + psz + ssz ));  #1: trailing space
+(( r = rowsize - 2 )); #2: leading spaces for indentation
+(( cols = rowsize / cnl ));
+(( t = cols * cnl + 1));
+if [ $rowsize -lt $t ]; then
+   (( cols = cols - 1 ));
+fi
+
+# alignment correction
+(( cnl = cnl + 2 ));
+
+# create a padding string to pad each column with
+while [ $tmp -lt $cnl ]; do
+   pad="$pad-";
+   (( tmp = tmp + 1 ));
+done
+
+# find out how many items there are total
+# if the last item happens to be in the last column,
+# we don't want to make a new line by accident
+items=`echo "$contents" | wc -l | tr -d ' '`;
+(( items = items - 1 ));
+
+# re-initialize our temporary variable for counting
+tmp=0;
+
+# start formatting the output
+for item in $contents; do
+   
+   # reset loop specific variables for each cycle
+   (( col = col + 1 )); (( tmp = tmp + 1 ));
+
+   # find length of command name and how much to pad it
+   itml=`echo $item | wc -c | tr -d " "`;
+   (( padl = cnl - itml - 1 - psz - ssz )); #1: the trailing space
+
+   # add the command to the output then pad it
+   output="$output$prefix$item$suffix";
+   # don't pad the last column
+   if [ $col -lt $cols ]; then
+      # darwin awk bug
+      if [ $padl -gt 1 ]; then
+         padt="padt=\`echo|awk '{print substr(\"$pad\",1,$padl)}'\`";
+         eval $padt; padt=`echo $padt | tr "-" " "`;
+         output="$output$padt";
+      else
+         output="$output ";
+      fi
+   fi
+
+   # add a new row if on the last column (but not on the last item)
+   if [ $col -ge $cols -a $tmp -lt $items ]; then
+      output=`printf "$output\r  "`;
+      col=0;
+   fi
+
+done
+
+# cache the response for later use
+[ $nocache -ne 1 ] && printf "$output" > $outcache
+
+# output the compiled format
+printf "\r$output";

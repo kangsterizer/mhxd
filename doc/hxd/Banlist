@@ -1,0 +1,79 @@
+This document describes the format of the server ban file (`banlist').
+
+Where is the `banlist' file?
+
+	The banlist file is, by default, located in the same directory as the
+hxd binary (before `make install' this would be in the `run/hxd' folder).
+
+Document format...
+
+	The banlist contains a single line per ban that you want to implement.
+you must complete each parameter of the line or it will not work correctly.
+Each line should contain the following information:
+
+	expires: when the ban expires (use `never' to make it last)
+	name:    the name the client is using
+	login:   the name of the account that the user is logging in with
+	user:    the UNIX account that the client is logged in as (ident)
+	address: the IP address of the client
+	message: the text to display to the user before disconnecting them
+
+
+Examples: Name banning
+======================
+
+	To express that one of these values can be anything, use the wild
+card character (`*', the asterisk). For example, to ban all people logging
+in with the name "bob":
+
+	never   bob   *   *   *   The name bob has been banned!
+
+	Notice the last portion, there are no quotes around the message. Also,
+there must be a message or the ban will be ignored. When implementing a name
+ban, you must acknowledge how the `official' Hotline Communications client
+works. The hotline client from Hotline Communications logs in without a name
+and then sends an addition event to change the name to the user's preselected
+name. So the name of all people using these clients will always be the name
+on the account at login time. As in the ban above, if the account name is not
+bob, a person using one of these clients will still be able to log in
+(because they will log in with the name on the account).
+
+
+Examples: IP address banning
+============================
+
+	It is also possible to ban a certain IP address. For example, to ban all
+users logging in with the IP address `25.127.74.5':
+
+	never   *   *   *   25.127.74.5   You have been banned!
+
+	If you want to ban an entire selection of IP addresses, you may complete
+the IP address with the wild character (`*', the asterisk). For example, bob
+is a dialup user and has a different ip address everytime but his ip always
+starts with 25.127.74 (because that is the IP addresses that his internet
+service provider has purchased):
+
+	never   *   *   *   25.127.74.*   You have been banned!
+
+	A new feature has also been added to shxd-0.1.54. You can now ban users
+logging in with a different IP address than the one you specify. You do this
+by prepending an exclamation point (`!') to the ip address you want to allow.
+For example, if you want to make sure that bob is the only one using his
+account, you can ban all people trying to log in with his account that do not
+have his IP address:
+
+	never   *   bob   *   !25.127.74.5   You are not bob!
+
+	You must be careful with this feature. It is intended for the purposes
+illustrated above. If you decide to make a secure server by banning everyone
+except the people you want to allow, you may end up accidentally banning
+everybody by mistake. Take the following example for instance:
+
+	never   *   *   *   !10.0.0.1   You are not allowed here!
+	never   *   *   *   !10.0.0.2   You are not allowed here!
+
+	You might think that this bans everybody except the IP addresses
+10.0.0.1 and 10.0.0.2. However, it will actually ban all users except IP
+address 10.0.0.2. When the user with the IP address 10.0.0.2 logs in, hxd
+will first check if his IP address is not 10.0.0.1. This is correct. He will
+then be banned.

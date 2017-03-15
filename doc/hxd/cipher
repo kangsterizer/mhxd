@@ -1,0 +1,61 @@
+To compile cipher (encryption) support:
+
+You need the openssl development libraries.
+To install them:
+
+Download the tarball.
+
+http://www.openssl.org/source/openssl-0.9.6c.tar.gz
+
+Then execute the following on the command line:
+
+	% tar zxf openssl-0.9.6c.tar.gz
+	% cd openssl-0.9.6c
+	% ./config
+	% make
+
+On Mac OS X, Darwin, or BSD Systems:
+
+	% sudo make test
+	% sudo make install
+
+On other systems:
+
+	% su
+	# make test
+	# make install
+
+Note: in the above, the percent sign indicates the
+assumption of a non-root basis. The hash sign (`#')
+indicates the assumption of a root basis. In both
+circumstance, neither of these characters should be
+taken as literal portions of the command. Only the
+commands after these characters should be typed on
+the command line.
+
+If you have installed it correctly, you should see
+the development libraries at:
+
+/usr/local/ssl/include
+
+After you have installed your openssl headers, in
+the hxd source folder, execute the following:
+
+	% ./configure --enable-hope --enable-cipher
+	% make
+
+You should now have a binary of a fully ciphered
+hxd in your run folder. To install hxd to the
+following folder (/usr/local/hxd), do this:
+
+On Mac OS X, Darwin, or BSD Systems:
+
+	% sudo make install
+
+On other systems:
+
+	# make install
+
+
+Good luck, and cheers,
+Devin <devinteske@hotmail.com>

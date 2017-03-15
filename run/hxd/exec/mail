@@ -1,0 +1,162 @@
+#!/bin/sh
+
+. .common
+
+# mail version 1.3 by kang@insecure.ws
+# faster, more functional than original :)
+
+blacklist="guest Guest"
+
+# GUEST nospam
+if [ "$ACCOUNT" = "guest" ]; then
+echo 1 >> etc/mailguestcount
+msgcount=`wc -l etc/mailguestcount| awk '{print $1}'` 
+if [ $msgcount -gt 10 ]; then echo -en "\rMaximum send count exceded for today.\r"; exit 2; fi
+fi
+
+if [ $# -eq 0 ]; then 
+if [ -d $accountsdir/$ACCOUNT/mbox ]; then
+	for i in $(ls $accountsdir/$ACCOUNT/mbox); do
+	count=$(($count+$(ls -l $accountsdir/$ACCOUNT/mbox/$i|wc -l) - 1))
+	done
+	[ -z $count ] && count="0"
+	if [ $count -lt 2  ]; then
+	echo -en "\rYou have $count message in your mailbox"
+	else
+	echo -en "\rYou have $count messages in your mailbox"
+	fi
+	exit
+else
+	echo -en "\rYou have 0 message in your mailbox"
+	exit 
+fi
+fi
+
+case $1 in
+-l | --list) what="ignorelist";;
+-i | --ignore) what="ignore";;
+-u | --unignore) what="unignore";;
+-c | --clean) what="clean";;
+-r | --read ) what="read";;
+           *) 
+	   if [ $# -eq 1 ]; then
+	   printf "\r\
+Usage: mail -c | --clear    [account]  clears your mailbox\r\
+       mail -r | --read     [account]  outputs your mail\r\
+       mail -i | --ignore   [account]  ignore mails from this account\r\
+       mail -u | --unignore [account]  unignore mails from this account\r\
+       mail -l | --list                list ignored accounts\r\
+       mail account message            sends mail" && exit 1
+	   fi
+	   what="send";;
+esac
+
+if [ "$what" == "send" ]; then
+	rcpt=$1
+	shift 1
+	message=$@
+	message=$(echo $message | tr -d '\n')
+	if ! [ -d $accountsdir/$rcpt ]; then
+		echo -en "\rSorry this account does not exists\r"
+		exit 2
+	fi
+	for i in $blacklist; do [ $i == $rcpt ] && echo -en "\rSorry this user is blacklisted and cannot receive messages.\r" && exit 2;done
+	[ -f $accountsdir/$rcpt/mail_ignore ] && for i in `cat $accountsdir/$rcpt/mail_ignore`; do [ "$ACCOUNT" == "$i" ] && echo -en "\rSorry, this user has ignored you, the message will not be sent." && exit 2; done
+	mail=$accountsdir/$rcpt/mbox/$ACCOUNT
+	num=$(ls -l $mail 2>/dev/null | wc -l) ; num=$(($num+1))
+	mkdir -p $mail 2>/dev/null
+	echo -en "From $ACCOUNT " > $mail/$num
+	date >> $mail/$num
+	echo -en "$message" >> $mail/$num
+	echo -en "\r_________________________________________________\r" >> $mail/$num
+	echo -en "\rMessage sent to $rcpt successfully."
+	if [ $# -gt 27 ]; then
+	echo -en "\rWarning words after the 28th haven't been sent!.\r"
+	fi
+	echo 1 >> $accountsdir/$ACCOUNT/mail_sents
+	exit 0
+fi
+
+if [ "$what" == "read" ]; then
+	from="$2"
+	if ! [ -z "$from" ]; then
+		if ! [ -d $accountsdir/$ACCOUNT/mbox/"$from" ]; then
+			echo -en "\rSorry, no mail from "$from"."
+			exit 4
+		fi
+		from=$accountsdir/$ACCOUNT/mbox/$from
+		cat $from/* | tr '\n' '\r'
+	else
+	if ! [ -d $accountsdir/$ACCOUNT/mbox ]; then
+		 echo -en "\rYour mailbox is empty."
+		 exit 4
+	fi
+	echo -en "\r"
+		list=$(ls $accountsdir/$ACCOUNT/mbox/)
+		for i in $list; do
+		list2=$(ls $accountsdir/$ACCOUNT/mbox/$i)
+		for z in $list2; do
+			cat $accountsdir/$ACCOUNT/mbox/$i/$z | tr '\n' '\r'
+		done
+		done
+	fi
+	echo -en "\r"
+fi
+
+if [ "$what" == "clean" ]; then
+	from="$2"
+	if ! [ -z "$from" ]; then
+		if ! [ -d "$accountsdir"/"$ACCOUNT"/mbox/"$from" ]; then echo -en "\rSorry, you have no mail from "$from"."
+		exit 3
+		fi
+		rm -r "$accountsdir"/"$ACCOUNT"/mbox/"$from"
+		[ `ls $accountsdir/$ACCOUNT/mbox | wc -l` = "0" ] && rm -r $accountsdir/$ACCOUNT/mbox 
+		echo -en "\rAll messages from "$from" have been deleted."
+	else
+		if ! [ -d $accountsdir/$ACCOUNT/mbox/ ]; then echo -en "\rSorry, you have no mail."
+		exit 3
+		fi
+		rm -r $accountsdir/$ACCOUNT/mbox
+		echo -en "\rAll of your messages have been deleted."
+	fi
+
+fi
+
+if [ "$what" == "ignore" ]; then
+	who="$2"
+	
+	if [ -f $accountsdir/$who/UserData ]; then	
+		echo $who >> $accountsdir/$ACCOUNT/mail_ignore
+		echo -en "\r$who has been ignored."
+	else
+		echo -en "\rSorry, this account does not exists."
+		exit 2
+	fi
+
+fi
+
+if [ "$what" == "unignore" ]; then
+	who="$2"
+	if [ -d $accountsdir/$who/ ]; then
+		grep -v $who $accountsdir/$ACCOUNT/mail_ignore > $accountsdir/$ACCOUNT/mail_ignore1
+	#	res=$?
+		mv $accountsdir/$ACCOUNT/mail_ignore1 $accountsdir/$ACCOUNT/mail_ignore
+		#if [ $res -eq 1 ]; then
+			echo -en "\r$who has been removed from ignore list."
+	#	else
+	#		echo -en "\r$who is not ignored."
+	#	fi
+	else
+		echo -en "\rSorry, this account does not exists."
+		exit 2
+	fi
+fi
+
+if [ "$what" == "ignorelist" ]; then
+	if [ -f $accountsdir/$ACCOUNT/mail_ignore ]; then
+		echo -en "\rIgnored accounts:\r"
+		cat $accountsdir/$ACCOUNT/mail_ignore | tr '\n' '\r'
+	else
+		echo -en "\rNo account ignored."
+	fi
+fi

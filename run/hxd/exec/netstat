@@ -1,0 +1,206 @@
+#!/bin/sh
+
+#################################################################
+#
+# name:    netstat port statistics writer
+# version: 2.1
+# date:    February 24, 2002
+# author:  Devin Teske
+#
+# dependencies:
+#
+#      netstat   uname   grep   tr   sed   ifconfig
+#
+#################################################################
+
+# script prefers bash
+[ -f /bin/bash ] && SHELL=/bin/bash
+
+######################### Configuration options
+
+# To configure nspsw edit the config file
+
+config="./etc/netstat.conf";
+
+######################### Begin script
+
+# execute the configuration file
+. $config;
+
+# get the binary name from the execution path
+exr=`echo $0 | tr '/' ' '`;
+exrnum=`echo $exr | wc -w | tr -d ' '`;
+exr="echo $exr | awk '{print \$$exrnum}'"
+exr=`eval $exr`;
+
+# check to see if the configure file has been modified
+# (the user must modify the config file before using)
+if [ "$device" = "" ]; then
+   printf "$exr: configure \`$config'";
+   printf "$exr: defaul'ting to eth0'";
+   device=eth0;
+fi
+
+# use netstat to look up the active connections (output standard
+# error to /dev/null since some operating systems complain too much)
+case `uname` in
+Darwin)
+   # BSD standards
+   ns=`/usr/sbin/netstat -n -f inet 2> /dev/null`;
+   for dev in $device; do
+      address="`/sbin/ifconfig $dev \
+         | grep inet \
+         | awk '{print $2}' \
+	 | sed s/addr://` @$address";
+   done;;
+FreeBSD)
+   # BSD standards
+   ns=`/usr/bin/netstat -n -f inet 2> /dev/null`;
+   for dev in $device; do
+      address="`ifconfig $dev \
+         | grep inet \
+         | awk '{print $2}' \
+	 | sed s/addr://` @$address";
+   done;;
+Linux)
+   # GNU standards
+   ns=`netstat -nt 2> /dev/null`;
+   for dev in $device; do
+      address="`/sbin/ifconfig $dev \
+         | grep inet \
+         | awk '{print $2}' \
+	 | sed s/addr://` @$address";
+   done;;
+OSF1)
+   # Alpha system. BSD standards
+   ns=`/usr/sbin/netstat -n -f inet 2> /dev/null`;
+   for dev in $device; do
+      address="`ifconfig $dev \
+         | grep inet \
+         | awk '{print $2}' \
+	 | sed s/addr://` @$address";
+   done;;
+SunOS)
+   # Solaris. BSD standards
+   ns=`/usr/ucb/netstat -n -f inet 2> /dev/null`;
+   for dev in $device; do
+      address="`ifconfig $dev \
+         | grep inet \
+         | awk '{print $2}' \
+	 | sed s/addr://` @$address";
+   done;;
+*)
+   # assume GNU standards for everything else
+   ns=`netstat -nt 2> /dev/null`;
+   for dev in $device; do
+      address="`/sbin/ifconfig $dev \
+         | grep inet \
+         | awk '{print $2}' \
+	 | sed s/addr://` @$address";
+   done;;
+esac
+# exit if we could not determine address
+if [ "`echo $address | tr -d ' '`" = "" ]; then
+   printf "$exr: could not determine address of device";
+   exit 0;
+fi
+
+# get a list of only established connections
+nt=`echo "$ns" | grep "EST"`;
+
+# find the row that contains the header
+head=`echo "$ns" | grep -i "Send-Q"`;
+
+# replace column names that have two words with one word
+head=`echo "$head" | sed -e s/Local\ Address/Local_Address/`;
+head=`echo "$head" | sed -e s/Foreign\ Address/Foreign_Address/`;
+
+# find the parameter index value of specified text
+# >syntax: get_index <var> <search_arg> <search_text>
+# >params:
+#   var -> name of variable to store result in (byref)
+#   seach_arg -> the text to look for
+#   search_text -> the text to look in
+#
+function get_index () {
+   local _key _var _index _word;
+   _var=$1; shift 1; _key=$1; shift 1; _index=0;
+   for _word in $@; do
+      (( _index = _index + 1 ));
+      [ "$_word" = "$_key" ] && break;
+   done
+   eval $_var=$_index;
+}
+
+# get the total number of words in a string
+# >syntax: get_wordtotal <var> <string>
+# >params:
+#   var -> name of variable to store result in (byref)
+#   string -> string to count words in
+#
+function get_wordtotal () {
+   local _var;
+   _var=$1; shift 1;
+   eval $_var=$#;
+}
+
+# count the number of active transactions from netstat
+# >syntax: count_transfers <var> <address> <port> <type>
+# >params:
+#   var -> name of variable to store result in (byref)
+#   address -> local address to read for
+#   port -> the port to look at
+#   type -> 0 = no send data, 1 = send data
+#
+function count_transfers () {
+   local sq la wt x y sqval laval curval addresses;
+
+   # set the address to contain the port
+   addresses=`echo $2 | sed s/" "/":$3"/g`;
+   addresses="$addresses`echo $2 | sed s/" "/".$3"/g`";
+
+   # check for invalid number of parameters
+   [ $# -lt 4 ] && return;
+
+   get_index "sq" Send-Q $head;
+   get_index "la" Local_Address $head;
+   get_wordtotal "wt" $head;
+   
+   x=0; y=0; z=0;
+   for curval in $nt; do
+      if [ $x -eq 0 ]; then
+         sqval=""; laval="";
+      fi
+      [ $x -lt $wt ] && ((x=x+1));
+      [ $x -eq $sq ] && sqval=$curval;
+      [ $x -eq $la ] && laval=$curval;
+
+      if [ $x -eq $wt ]; then
+         teststr=`echo $addresses | grep -F "$laval"`;
+         if [ "$teststr" != "" ]; then
+            [ "$sqval"  = 0 -a $4 -eq 0 ] && ((y=y+1));
+            [ "$sqval" != 0 -a $4 -ne 0 ] && ((z=z+1));
+	 fi
+      fi
+      [ $x -eq $wt ] && x=0;
+   done
+
+   [ $4 -eq 0 ] && eval $1=$y;
+   [ $4 -eq 1 ] && eval $1=$z;
+}
+
+# do the actual counting
+count_transfers "connected" "$address" $uport  0;
+count_transfers "downloads" "$address" $txport 1;
+count_transfers "uploads"   "$address" $txport 0;
+
+# display zeroes if we couldn't obtain values
+[ "$connected" = "" ] && connected=0;
+[ "$downloads" = "" ] && downloads=0;
+[ "$uploads"   = "" ] && uploads=0;
+
+# re-execute the conf file so it now knows these values
+. $config;
+
+# output the results
+printf "$format";

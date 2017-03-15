@@ -1,0 +1,18 @@
+This document descibes how to make binaries for your platform.
+
+There is a utility for making binaries for your platform that
+I have made. From the root of the shxd folder, type the
+following commands:
+
+     % ./configure
+     % make binaries
+
+Before you do this, make sure of somethings, you want at
+least 100MB of hard drive space to be safe. That you have
+a lot of time. The `mkbin' script will test your system and
+compile as many binary combinations as it can using numerous
+combinations of --enable options.
+
+The advantages to this script are merely to compile binaries
+for other people. There are currently a total of 12 binary
+combinations given what i've told it to compile.

@@ -1,0 +1,11 @@
+icon 500
+snd -O
+snd -s hxsnds/logged-in.wav login
+snd -b -s hxsnds/message.wav message
+snd -s hxsnds/chatpost.wav chat
+snd -s hxsnds/newspost.wav news
+snd -s hxsnds/join.wav join
+snd -s hxsnds/part.wav part
+snd -b -s hxsnds/chatinvite.wav chat_invite
+snd -s hxsnds/filedone.wav file_done
+snd -b -s hxsnds/error.wav error

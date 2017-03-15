@@ -1,0 +1,45 @@
+This document sheds light on the allow/deny files for accounts.
+
+There are two files, `allow' and `deny' that give the server
+extra functionality when placed in an account's directory.
+
+If you create a file in an account directory named `allow',
+hxd will search the file for ip addresses to allow connections
+to for the given account. If the ip address of the client does
+not appear in the file, the user's connection to the server is
+closed.
+
+For example, if you wanted to allow only clients connecting as
+guest with the ip address of 10.0.0.4, you should create a file
+in `./accounts/guest' named `allow' and put the following text
+in it:
+
+@10.0.0.4
+
+Note that IP address begin with the at symbol (`@'). In this
+situation, every client attempting to connect that does not
+have an ip address of 10.0.0.4 will be disconnected.
+
+You can also specify partial addresses. To only allow people
+with an ip address starting with `10.0.0.' to connect, place
+this in the allow file:
+
+@10.0.0.*
+
+In this case all clients with ip addresses not beginning with
+`10.0.0.' will be disconnected.
+
+Similarily, there is a deny file. Anyone not in the deny file
+is allowed a connection to the server. If you want to deny users
+with the ip address 10.0.0.4 and allow everyone else (for the
+guest account), create a file in `./accounts/guest/' named
+`deny' and place the following text in it:
+
+@10.0.0.4
+
+Both of these files when read, will ignore lines beginning with
+the number sign (`#'). There can be no whitespace between the
+at symbol (`@') and the beginning of the line. The at symbol
+(`@') must be the fist character on the line. Similarily, there
+can be no whitespace in between the at symbol (`@') and the ip
+address.

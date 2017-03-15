@@ -1,0 +1,105 @@
+#!/bin/sh
+# Original Idea by Shiva y a
+# Unhetically stolen by kang, and rewritten
+
+
+URI="http://hotlinex.sourceforge.net" #mhxd site
+CVS_URI="http://cvs.sourceforge.net/viewcvs.py/*checkout*/hotlinex/mhxd/ChangeLog?content-type=text%2Fplain&rev=." #mhxd web-cvs
+CACHE="./etc/mhxd.version" #cache file, downloads the version check file only one time per RTIME days
+RTIME="1"
+CURRENT=$VERSION # Set manually on non-mhxd or old servers.
+tmp=/tmp/mhxd_$RANDOM
+
+if [ -f /usr/bin/wget ]; then
+	HAS_WGET=1
+else if [ ! -f /usr/bin/curl ]; then
+	echo -en "Neither wget or curl available. Please install one of them before using this script.\r"
+	exit
+fi
+
+display_changelog()
+{
+IFS=''
+if [ $HAS_WGET -eq 1 ]; then
+	wget -q --output-document=$tmp "$URI/NEWS"
+else
+	curl "$URI/NEWS" > $tmp
+fi
+
+news=`cat $tmp`
+for i in $news;do news=`echo $i| tr "\n" "\r"`;
+	echo -en "\rChangeLog:\r$news"
+	exit;
+done
+IFS='
+'
+};
+
+display_cvs()
+{
+IFS=''
+if [ $HAS_WGET -eq 1 ]; then
+	wget -q --output-document=$tmp "$CVS_URI"
+else
+	curl "$CVS_URI" > $tmp
+fi
+news=`cat $tmp | grep -v "ChangeLog for mhxd"`
+for i in $news;do news=`echo $i| tr "\n" "\r"`;
+	echo -en "\rCVS ChangeLog:$news"
+	exit;
+done
+IFS='
+'
+};
+
+check_version()
+{
+if [ -f $CACHE ]; then
+	stamp=`find "$CACHE" -mtime +$RTIME`
+else
+	stamp=1
+fi
+
+if [ ! -z "$stamp" ]; then
+	if [ $HAS_WGET -eq 1 ]; then
+		wget -q --output-document=$CACHE "$URI/version"
+	else
+		curl "$URI/version" > $CACHE
+	fi
+fi
+
+version=`cat $CACHE`
+
+vers0=`echo $version | awk -F '.' '{print $1}'`
+vers1=`echo $version | awk -F '.' '{print $2}'`
+vers2=`echo $version | awk -F '.' '{print $3}'`
+
+cvers0=`echo $CURRENT | awk -F '.' '{print $1}'`
+cvers1=`echo $CURRENT | awk -F '.' '{print $2}'`
+cvers2=`echo $CURRENT | awk -F '.' '{print $3}'`
+
+if [ "$vers0" -le "$cvers0" -a "$vers1" -le "$cvers1" -a "$vers2" -le "$cvers2" ]; then
+	echo -en "\rYou are using the latest mhxd release."
+else
+	echo -en "\rYou are NOT using the latest mhxd release.\r\
+You are running $CURRENT, while $version is available.\r\
+Please upgrade, a new version is available here: $URI"
+fi
+};
+
+
+case "$1" in
+-C | --changes) display_changelog;;
+-c | --cvs) display_cvs;;
+*)
+if [ $# -eq 1 ]; then
+	printf "\r\
+Usage:  /up -C | --changes     Display current ChangeLog\r\
+        /up -c | --cvs         Display CVS ChangeLog"
+else
+	check_version
+fi
+;;
+esac
+
+rm -rf $tmp

@@ -1,0 +1,253 @@
+This file documents the commands available in HXD servers.
+
+What is an 'HXD command'?
+
+   An 'HXD command' is a key word that is sent via chat (either in public chat
+in the client or private chat with another user in the client). These commands
+are triggered by sending the keyword preceded by the command character. On
+normal HXD servers, this command character is the forward slash (/). In synhxd
+the normal command character works, in addition the backward slash (\) was
+added. (in subsequent versions of hx newer than 0.7.14 you must use // as the
+server command because / is already used for commands local to hx)(if you are
+using an hx version older than or including 0.7.14 then // is not a supported
+substitution and you must use \ as a command character because / is already
+used by the client).
+
+
+Document format...
+
+/command_name
+
+   Origin: the first HXD version that it appeared in
+   Usage: syntax of the command
+   Prerequisites: the requirements necessary to use the command
+   Description: a description of what the command does
+
+
+Note about Prerequisites...
+
+Prerequisites are properties that either must be set via the /access command or
+be in a file named 'access' residing inside the account folder for that user.
+For details on the possible values that are available in that file, read the
+file named 'ACCESSVALUES' in the root of the synhxd folder.
+
+
+HXD Command List:
+--------------------------------------------------------------------------------
+
+/0wn
+
+   Origin: HXD 0.1.35
+   Usage: /0wn <uid> <property>[=]<value>
+   Prerequisites: user_0wn=1 (is0wn3d=0 for the person being used on)
+   Description: 0wn (pronounced 'own') allows you to change attributes of
+      other connected users. You can change their name, icon, color, and
+      visibility.
+
+      Properties:
+
+         ---property---      ---syntax---      ---Origin---
+         name                name=<name>       HXD 0.1.35
+         icon                icon=<icon>       HXD 0.1.35
+         color               color=<color>     HXD 0.1.35
+         visible             visible           SynHXD 0.1.42
+         g0away              g0away            SynHXD 0.1.42
+
+      You can specify multiple arguments in the 0wn command separated by a
+      space. If you specify more than one command and you are using name then
+      you specify name last in the list because name interprets everything
+      after it to the end of the command as the value for the new name. You
+      can't use visible or g0away when changing another property because if
+      you change a property of an invisible user they become visible.
+
+      Examples:
+
+         /0wn 1 name=Devin Teske
+         /0wn 1 icon=128
+         /0wn 1 color=2
+         /0wn 1 visible
+         /0wn 1 g0away
+         /0wn 1 icon=128 color=2 name=Devin Teske
+
+/access
+
+   Origin: HXD 0.1.35 (enhancements have been made and differs in SynHXD 0.2)
+   Usage: /access <uid> <property>=<value>
+   Prerequisites: user_access=1 (access_volatile=1 for the person being used on)
+   Description: access allows you to set access privileges for individual
+      connected users rather than entire accounts. The privileges expire when
+      the person is disconnected from the server. For a list of properties
+      and values that are supported see the file named 'ACCESSVALUES' in the
+      root of the synhxd folder. A description of each property is given in
+      that file also. Below is a brief list of available properties:
+
+      access_volatile        can_spam         chat_private
+      debug                  file_getinfo     file_hash
+      file_list              is_0wn3d         manage_users
+      msg                    set_subject      user_0wn
+      user_access            user_color       user_getlist
+      user_visibility
+
+   Update Notice:
+
+      As of SynHXD 0.2 you can now edit account priveleges for an individual
+      logged in client with this command. Below is a list of properties you can
+      use to set account privs per client (they should be self explanatory):
+
+      cant_be_disconnected   comment_files    comment_folders
+      create_folders         create_users     delete_files
+      delete_folders         delete_users     disconnect_users
+      dont_show_agreement    download_files   download_folders
+      get_user_info          make_aliases     modify_users
+      move_files             move_folders     post_news
+      read_chat              read_news        rename_files
+      rename_folders         send_chat        upload_anywhere
+      upload_files           use_any_name     view_dop_boxes
+
+/alert
+
+   Origin SynHXD 0.1.42
+   Usage: /alert <uid> <msg>
+   Prerequisites: (have the 'Can Broadcast' privilege)
+   Description: alert produces a broadcast-like message to a specific
+      connected user.
+
+/away
+
+   Origin: HXD 0.0.27
+   Usage: /away
+   Prerequisites: none
+   Description: makes your name color gray-out signifying that you are not
+      actively doing anything on that server.
+
+/broadcast
+
+   Origin: HXD 0.0.16
+   Usage: /broadcast <msg>
+   Prerequisites: (have the 'Can Broadcast' privilege)
+   Description: broadcast sends a message to all connected users (cannot be
+      replied to).
+
+/color
+
+   Origin: HXD 0.0.106
+   Usage: /color <color>
+   Prerequisites: user_color=1
+   Description: color changes the color of your name in the user list.
+
+/g0away
+
+   Origin: HXD 0.0.106
+   Usage: /g0away
+   Prerequisites: user_visibility=1
+   Description: g0away (pronounced as "go away") toggles your visibility in
+      the user list.
+
+/mon
+
+   Origin: HXD 0.1.35
+   Usage: /mon <uid>
+   Prerequisites: disconnect_users=1 (access_volatile=1 for the person being
+      used on)
+   Description: mon gives a specific connected user the privilege to private
+      message.
+
+/visible
+
+   Origin: HXD 0.0.106
+   Usage: /visible
+   Prerequisites: user_visibility=1
+   Description: visible toggles your visibility in the user list.
+
+/users
+
+   Origin: SynHXD 0.1.44
+   Usage: /users
+   Prerequisites: manage_users=1
+   Description: users allows you to see invisible users.
+
+--------------------------------------------------------------------------------
+
+The following commands are only available if you enable-exec in hxd.conf
+
+
+/exec
+
+   Origin: HXD 0.0.15
+   Usage: /exec <command>
+   Prerequisites: none
+   Description: exec executes the command if either a binary or shell script
+      exists in the folder named exec in the root of the synhxd folder. Any
+      parameters passed are sent to the binary/script.
+
+/find
+
+   Origin: HXD 0.0.15
+   Usage: /find <name>
+   Prerequisites: none
+   Description: find searches the files folder for matches of the name passed
+      and returns the matching files. (note: this feature was greatly
+      improved upon in SynHXD 0.1.42)
+
+/help
+
+   Origin: SynHXD 0.1.42
+   Usage: /help
+   Prerequisites: none
+   Description: help executes the help shell script or help binary in the exec
+      folder of the synhxd folder if it exists.
+
+/uptime
+
+   Origin: SynHXD 0.1.42
+   Usage: /uptime [-V]
+   Prerequisites: none
+   Description: uptime executes the uptime binary if it exists in the exec
+      folder at the root of the synhxd folder.
+
+/uname
+
+   Origin: SynHXD 0.1.58
+   Usage: /uname [-a]
+   Prerequisites: none
+   Description: uname executes the uname binary if it exists in the exec
+      folder at the root of the synhxd folder.
+
+/?
+
+   Origin: SynHXD 0.1.58
+   Usage: /? [-r]
+   Prerequisites: none
+   Description: outputs a list of executable commands in the exec folder
+      at the root of the synhxd folder. the -r parameter rebuilds the
+      cache for this script. it caches output for faster responses.
+
+/netstat
+
+   Origin: SynHXD 0.1.58
+   Usage: /netstat
+   Prerequisites: none
+   Description: outputs a list of current number of users connected, total
+      active downloads, and total active uploads.
+
+/seen
+
+   Origin: SynHXD 0.2
+   Usage: /seen <name>
+   Prerequisites: none
+   Description: outputs the date/time of the last log entry containing `name'.
+
+--------------------------------------------------------------------------------
+
+The following command is only available if you run configure prior to a make
+after you modify the code in configure or configure.in to define the constant
+'XMALLOC_DEBUG' (advanced users only).
+
+/maltbl
+
+   Origin: HXD 0.0.15
+   Usage: /maltbl
+   Prerequisites: debug=1
+   Description: maltbl (pronounced 'mal[function] table') writes debug
+      information to the log regarding xmalloc. Allows you to track down
+      memory leaks.

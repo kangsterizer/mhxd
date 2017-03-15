@@ -1,0 +1,147 @@
+ChangeLog for mhxd
+
+version 0.4.11:
+* fixed gcc-4.1.1 compile errors for hx
+
+version 0.4.10:
+* (kang) src/hxd/hlserver.c src/common/hxd.h, src/common/hotline.h, src/hxd/rcv.c: added
+avaraline.net self-loading icon support. Thanks vertigo for the help :)
+* (kang) src/acctedit/acctedit.c: minor typo fix :)
+* (kang) run/hxd/exec: added /update script, mhxd version checking. Check at
+login for admins per default. (thx shiva y a)
+* (kang) src/hxd/commands.c: moved cmd_snd_chat above CONFIG_EXEC, or compilation would fail when disabling exec at configure time. Thanks ben_g.
+* (kang) src/hxd/commands.c: restored logging of ownages.
+* (kang) src/hxd/htxf.c: fixed usleep for BSD's and Win32, they wouldn't accept
+passing values over 1000000 and would return immeditaly (making capping
+unefficient). This replace the dirty Win32 fix. (taken from shxd, thanks
+devin)
+* (kang) src/hx/hx_tty.c, src/hx/hx_commands.c: added mkick command from kehx/ehx,
+allows kicking back users when they rejoin. evil :>
+* (kang) src/hxd/htxf.c: changed ENOTSUP for OpenBSD only (different references of
+errno, refer to manpage) and therefore fixed compilation on this platform
+* (kang) various scripts: fixed a few pure sh issues
+* (kang) src/hx/connect.c src/hx/hx_rcv.c: removed output.on_connect() from 1.5+
+agreement, now execute after login on any serverversion. Reason: if the server
+supports 1.5+ protocol and the account doesn't have an agreement file,
+output.on_connect() would never be executed.
+* src/hxd/hxd.c: in signal handlers, set variable last_signal which is checked
+                 in loopZ. Avoid calling library functions in signal handlers.
+* (kang) src/common/hxd.c: added -o flag to specify a file to where pid inside
+(usefull for multiple hxd's running)
+
+version 0.4.9:
+* src/hx/files.c: s/htxf->pid/htxf->tid/
+* src/hxd/{accounts.c,rcv.c}: msg=1 in access file overrides UserData.
+* src/hxd/htxf.c: if free(ptr) has already been called,
+                  undefined behaviour occurs.
+* src/hx/translate.c: patched translate.c to work with new babelfish.
+* src/hx/files.c: do not start xfer thread when the xfer is queued.
+
+version 0.4.8:
+* src/common/hxd.c: remove duplicate thread_check_continous function.
+* (kang) run/hxd/exec: added .common file for common variables
+*   added mail check at login
+*   added possibility to execute a script per account at login
+      (accounts/$ACCOUNT/login)
+* src/hxd/commands.c: added $VERSION to the environnement when running exec
+
+version 0.4.7:
+* run/hxd/hxd.conf, src/common/hxd.conf.in: fix misnamed deluser to rmuser.
+* src/common/hxd.c: call thread_check every 5 seconds (via timer).
+
+version 0.4.6:
+* src/hx/news.c: fix compilation for builds not using iconv.
+* src/hxd/accounts.c: do not run newuser script when modifying accounts.
+* src/hxd/commands.c: change away toggle method from add/sub to or/and.
+
+version 0.4.5:
+* src/ghx/{icons.c,hx_gtk_about.c}: fix garbage in file.
+* src/hxd/tnews.c: fix tnews category listings, when iconv is enabled.
+* src/hxd/tnews.c: fix too large data in extended news lists.
+* src/ghx/files.c: make file list columns auto resize.
+
+version 0.4.4:
+* src/common/threads.c: change name of thread_create to hxd_thread_create.
+                        OSX declares thread_create in a mach header.
+* src/hxd/htxf.c: reset data/rsrc_pos to 0 for each file in folder upload.
+* (kang) src/hxd/commands.c: fixed ban via chat (was only banning for 1s)
+* (kang) src/hxd/rcv.c: probably the end of uid 0 bug
+* (kang) src/hxd/hxd.c: changed logging format of strftime to fit standard
+logging (you can now use some log analysers with hxd)
+* (kang) src/hxd/hxd.c: attempt to fix HUP signal on all platforms
+* (kang) src/hxd/commands.c: nick_to_uid now resolves names better (if kan and
+kang are online, /access kang xxx will take user kan, if just kang is online
+it takes kang. if two kan are online it takes the second kan)
+
+version 0.4.3:
+* src/acctedit/acctedit.c: add -t option to test bits.
+* run/hxd/exec/find: use acctedit.
+* run/hxd/exec/find: fix output for files dirs with . in path.
+* (kang) src/hxd/rcv.c, src/hxd/hlserver.c: changed login_tv/idle_tv initialisation
+(earlier in login)
+* (kang) src/protocol/chat.c: various IRC protocol fixes and enhancements
+* src/hx/hx_rcv.c,src/hxd/htxf.c: fix read error handling.
+* configure.in: fix typos HXLIBS->HXDLIBS, libiconv in HXDLIBS
+* src/hxd/rcv.c: new function htlc_set_name to filter nickname.
+* src/hx/news.c: convert encoding in news posts.
+* src/hx/hx_commands.c: hx_send_chat has new arg for /me command.
+* (kang) src/protocol/hotline.c: doesn't update in snd_user_change() if user is
+invisible
+* (kang) src/hxd/accounts.c: fixed account_trusted, now works as expected
+* src/hxd/htxf.c: new folder/file_recv functions.
+
+version 0.4.2
+* src/hx/connect.c: list users on connect.
+* src/hx/files.c: close htxf->pipe in xfer thread and main thread.
+* src/hx/files.c: fix fd leak if file to be downloaded was already complete.
+* src/hxd/rcv.c: fix cipher_only hxd.conf check (devin)
+* src/common/threads.c: include signal.h and errno.h
+* configure.in: upgrade for autoconf 2.57
+* src/hxd/tnews.c: finish threaded news. (Patrick Enoch)
+* src/apple: new directory for OSX specific code.
+* src/hxd/htxf.c: call htxf_close in all the right places.
+* configure.in: fix OSX and missing .deps problems.
+* src/hxd/htxf.c: ignore write lock errors if not supported by system (OSX).
+* src/hx/hx_commands.c: set command can now print all variables.
+* src/hxd/commands.c: check if fds are equal before calling dup2
+* src/common/hotline.h: more news stuff.
+* src/hxd/tnews.c: sort news threads to a tree.
+* src/hx/news.h: new file.
+* src/hx/tnews.c, src/ghx/news15.c: frontend independent news.
+* src/common/hldump.c: do not create file if hldump is disabled.
+* src/hxd/tnews.c: support delete all replies.
+* src/hxd/files.c: check if an htxf is done to avoid limit error.
+* src/hxd/htxf.c: update total_pos with comment length.
+* src/hx/connect.c: for 1.5+ servers, call on_connect after agreement.
+
+version 0.4.1
+* src/common/decode.c: realloc htlc->in if it is not set.
+* src/hxd/rcv.c: detach resolve thread.
+* src/hxd/htxf.c: fix crash when create thread fails.
+* src/common/hxd.conf.in src/hxd/rcv.c: added news_format customisability,
+and login post (kxd addition)
+* src/hxd/accounts.c, src/ghx/useredit.c, src/acctedit/acctedit.c: fixed typo,
+s/catagory/category
+* src/hxd/rcv.c, doc/hxd/Access: fixed name_lock (wasn't implemented yet)
+* src/hxd/accounts.c:fixed msg access (now called send_msgs too)
+* src/hxd/commands.c: s/ malloc/ xmalloc/
+* configure.in, src/hxd/Makefile.am: do not build queue.c if queue disabled.
+* src/common/hotline.h: added file name encoding field to filelist header.
+* src/hxd/files.c: use iconv to convert file names.
+* src/hx/files.c: better path_to_hldir interface.
+* src/hx/hx_rcv.c: use iconv for msg/chat in hx core, not in frontends.
+* src/ghx/useredit.c: correct NACCESS
+
+version 0.4.0
+* merged kxd and hxd code, including:
+* src/hxd/spam.c: antispam, transaction based
+* src/hxd/rcv.c, src/hxd/accounts.c, shxd/hxd/files.c: nicer error messages
+* src/hxd/hxd.c, src/hxd/rcv.c: server uptime, client idle time
+* src/hxd/rcv.c: hostmask resolving in get info
+* src/hxd/rcv.c: kick/ban announced in chat, with optional reason
+* src/hxd/commands.c: exec logging (mails aren't logged)
+* src/hxd/rcv.c: invisibility on login
+* src/hxd/rcv.c: detection of mutiple clients
+* src/hxd/commands.c: /users shows invisible users
+* src/hxd/rcv.c: default color/icon on login
+* src/hxd/rcv.c: exec a script on login

@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# locate, kang
+# Description:
+# locate is a updatedb based locate. It is case sensitive
+# doesn't takes apple alias, and doesn't support wierd MacOS Encoding
+# However, it is blazing fast compared to find. (usually less than a second)
+
+# Parameters;
+# the settings file location: (settings are made there!)
+. etc/locate.conf
+
+
+echo -ne "\rQuerying database...\r"
+tmp=`date +%s | cut -b 1-5`
+locate -d $datapath $* > $tmp
+cat $tmp | grep -v "/\." | grep -iv "drop box" | head -30 | tr "\n" "\r"
+echo -ne "done, statistics:\r"
+rm $tmp

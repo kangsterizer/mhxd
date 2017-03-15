@@ -1,0 +1,4 @@
+# expires       version name    	login   user    address message
+#never		*	*		guest	root	*	dont horline as root!
+#never		*	unnamed		guest	*	*	get a name!
+#never		>=150	*		guest	*	*	Hotline 1.5 is 0wn3d!

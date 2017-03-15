@@ -1,0 +1,98 @@
+This is mhxd, a merge of the 3 different forks of hxd.
+
+hx is a free set of software using hotline protocols.
+For information about Hotline, see:
+  http://www.vivahx.com/		Viva HX!
+  http://www.hotspringsinc.com/		Hotsprings Inc.
+  http://www.hotlinehq.com/		Hotline HeadQuarters
+
+For the latest information about hx, see:
+  http://hx.fortyoz.org/
+  http://sourceforge.net/projects/hotlinex/
+
+See the AUTHORS file for contact information.
+
+To compile hxd, you need an ANSI C compiler, preferably the GNU C compiler.
+Traditional compilers may work, if they understand function prototypes.
+The ultrix 4.3 compiler does, if your compiler does not, try ansi2knr.
+The Tiny C Compiler (Linux only) will compile hxd very fast, but apparently
+causes hxd to segfault.
+
+If you run into problems building or running, see PROBLEMS.
+
+Building instructions
+=====================
+
+hxd server
+==========
+$ ./configure --enable-hxd
+By default pthreads are used if available, to disable, use --without-pthreads
+$ make
+
+To install it in ./run/hxd/ :
+$ make install
+
+To start the server:
+$ cd ./run/hxd
+$ bin/hxd [-p port (default 5500)] [-f hxd.conf]
+
+To leave it in the background, add & to the end of the command line.
+
+to register with a tracker:
+configure with --enable-tracker-register
+and edit the tracker section of hxd.conf
+
+To compile the tracker server:
+configure with --enable-hxtrackd
+
+To enable /exec and /find:
+configure with --enable-exec
+
+To edit accounts on a tty, use acctedit (src/acctedit/acctedit)
+Enter toggles access, s saves, q quits.
+
+Many other optional configure options exist.
+For a list, run ./configure --help
+
+hx client
+=========
+To compile the client, configure with --enable-hx
+You may need to get libreadline from ftp://ftp.gnu.org/pub/gnu/readline/
+
+Soundsets are loaded with snd -S sndset_file
+Turn sounds on/off with snd -O/-o
+
+ghx client
+==========
+Add --enable-gtk to the configure flags.
+
+Specify icon files with icon_files[i]=...
+User icon files with user_icon_files[i]=...
+Files with lower indexen are loaded first
+For example:
+icon_files[0]=icons.rsrc
+user_icon_files[0]=bm_icons.rsrc
+user_icon_files[1]=icons.rsrc
+
+SOCKS proxy support
+===================
+hxd can use the socks5 library from http://www.socks.nec.com/
+use the --with-socks and/or --with-socks-include configure options.
+
+Copyright information
+=====================
+Copyright (C) 1997, 2003 HotlineX Project
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.

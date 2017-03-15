@@ -1,0 +1,6 @@
+tty_show_user_parts='1'
+tty_show_user_joins='1'
+tty_show_user_changes='1'
+tty_chat_pretty='1'
+strip_ansi='0'
+infoprefix='[1;32mú[1;36mù[1;32mú[0m '

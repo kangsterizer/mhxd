@@ -1,0 +1,229 @@
+#!/bin/sh
+
+#################################################################
+# Title: find
+# Date: November 18, 2002
+# Author: Devin Teske
+# version: 1.3
+#
+# Dependencies:
+#    find   sed   grep   tr   awk
+#
+# Details:
+#    This script conforms to BSD standards. Although, if you
+#    happen to have a GNU compatible find library installed you
+#    have a few more options available. For example, GNU options
+#    allow for case-insensitive searching. If you are running a
+#    BSD system (OS X and Darwin are based on FreeBSD), and you
+#    wish to enable case-insensitive searching, you will need to
+#    install a GNU compatible find utility. Since i know a lot
+#    of OS X clients will be using this script, I have packaged
+#    GNU Find for OS X. It can be found at the address given
+#    below. This script will automatically recognize the GNU
+#    flags when available and use them to its advantage.
+#
+# GNU find 4.1 for Mac OS X [Server] (Darwin):
+#    http://synhxd.sourceforge.net/darwin_gnufind.tgz
+#################################################################
+
+# script prefers bash
+[ -f /bin/bash ] && SHELL=/bin/bash
+# test for bash on FreeBSD/OpenBSD
+[ -f /usr/local/bin/bash ] && SHELL=/usr/local/bin/bash
+
+####################### Configure Options
+
+# all the main options are now in etc/find.conf
+
+# which conf file to read:
+conf="./etc/find.conf";
+
+####################### Begin script
+
+#set usage
+usage="Usage: find [-qv] <file name>";
+
+# read parameters
+num=$#;
+
+if [ $num -eq 0 ]; then
+   # user didn't supplied any arguments
+   echo -n "$usage";
+   exit 0;
+fi
+
+# initialize local variables
+findcmd=""; findres=""; rc=0; ffnd=""; ipath="";
+bsd_find=0; findkey=""; printf=""; path="-path";
+version="1.3"; quiet=0; pretty="  ¥ ";
+
+# check for -v (version)
+if [ "$1" = "-v" -o "$1" = "--version" ]; then
+   echo -n "find v$version";
+   exit 0;
+fi
+
+# check for -q (quite mode, no headers)
+if [ "$1" = "-q" -o "$1" = "--quiet" ]; then
+   quiet=1;
+   shift 1;
+   num=$#;
+   if [ $num -eq 0 ]; then
+      echo -n "$usage";
+      exit 0;
+   fi
+fi
+
+# read arguments (harmful elements are removed)
+args=`echo "$@" \
+   | tr -d '\`' \
+   | tr -d '\|' \
+   | tr -d '\"' \
+   | tr -d '\\\\' \
+   | tr -d '\$' \
+   | tr -d ';'`;
+
+# read in the configuration file
+. $conf;
+
+if [ $quiet -eq 0 ]; then
+   echo -n "$header"
+else
+   pretty="";
+fi
+
+# find out what we are dealing with
+findkey=`$fbin --help 2> /dev/null`;
+printf=`echo "$findkey" | grep "\\-printf"`;
+if [ "$printf" = "" ]; then
+   bsd_find=1;
+fi
+ipath=`echo "$findkey" | grep "\\-ipath"`;
+# OpenBSD 3.0 understands all GNU flags except -ipath
+if [ $bsd_find -eq 1 -a "$ipath" != "" ]; then
+   path="-ipath";
+fi
+
+# to escape a file path for sed
+function escapepath () {
+   newpath=`echo "$1" \
+      | sed s/"\\/"/"\\\\\\\\\/"/g`;
+   eval "$2=\"$newpath\"";
+}
+
+# check if the account file reader is installed
+# if so we can check if they have priv to read drop boxes
+read_dropboxes=0;
+w="bin/acctedit";
+if [ "$w" != "" -a "$ACCOUNT" != "" -a -f $w ]; then
+# view_drop_boxes
+  if $w ./accounts/$ACCOUNT/UserData -t 30; then
+    read_dropboxes=1;
+  fi
+fi
+
+# construct the find statement
+findcmd="findres=\`$fbin $searchdir -follow";
+if [ $bsd_find -eq 0 ]; then
+   findcmd="$findcmd \
+      -not '(' \
+      -path '*/Network Trash Folder*' \
+      -o -path '*/TheVolumeSettingsFolder*' \
+      -o -path '*/TheFindByContentFolder*' \
+      -o -path '*/Icon'";
+   if [ $read_dropboxes -eq 0 ]; then
+      findcmd="$findcmd \
+         -o -ipath '*/*drop box*'";
+   fi
+   findcmd="$findcmd ')'";
+   findcmd="$findcmd -and \
+      -iname \"*$args*\" \
+      -printf \"\\n$pretty/%P\"";
+   findcmd="$findcmd \
+      |grep -v \".*/\\..*\" |tr '\n' '\r'";
+else
+   escapepath "$searchdir" "rd";
+   findcmd="$findcmd \
+      -name \"*$args*\"";
+   if [ $restrict -eq 0 ]; then
+      findcmd="$findcmd \
+         | sed s/\"$rd\"/\"$pretty\"/";
+   else
+      findcmd="$findcmd \
+         | sed s/\"$rd\"/\"$pretty\"/";
+   fi
+   findcmd="$findcmd \
+      | grep -v \"^$pretty\$\" \
+      | grep -v \".*/\\..*\" \
+      | grep -v \".*/Network Trash Folder*\" \
+      | grep -v \".*/TheVolumeSettingsFolder*\" \
+      | grep -v \".*/TheFindByContentFolder*\" \
+      | grep -v \".*/Icon\"";
+   if [ $read_dropboxes -eq 0 ]; then
+      findcmd="$findcmd \
+         | grep -iv \".*/.*drop box.*\"";
+   fi
+fi
+
+# close the find command and run it (output std_error to /dev/null)
+findcmd="$findcmd 2> /dev/null\`";
+eval $findcmd;
+
+# restrict the output
+if [ $restrict -eq 1 ]; then
+   if [ $bsd_find -eq 0 ]; then
+      # the find result ends with a new line character
+      # so we want to grab one more file/line to display
+      (( maxreturn = maxreturn + 1 ))
+   fi
+   # convert carriage returns to newlines and then back
+   # because grep doesn't count carriage returns as a
+   # line delimiter, only new line characters
+   findres=`echo "$findres" \
+      | tr "\r" "\n"`;
+   # count how many lines there were so we can say if
+   # there were more matches than were displayed
+   rc=`echo "$findres" | grep -c .`;
+   findres=`echo "$findres" \
+      | head -n $maxreturn \
+      | tr "\n" "\r"`;
+fi
+
+# remove blank lines and assign to a variable that we can
+# use to check to see if we had any real results
+ffnd=`echo $findres | tr -d "\r"`;
+
+# add a carriage return before the footer because if we
+# have used tr or head it won't have the carriage return
+# at the end of the find result
+if [ $rc -ge $maxreturn -o $restrict -eq 0 -o "$ffnd" = "" ]; then
+   footer="$footer";
+fi
+
+if [ "$ffnd" = "" ]; then
+   # the script didn't find anything
+   echo -n "$notfound";
+else
+   # the use of head with the bsd method will remove the
+   # leading carriage return, so we must re-add it
+   if [ $bsd_find -eq 1 -a $restrict -eq 1 ]; then
+      findres="$findres";
+   fi
+   # cut off the trailing new line after quiet output
+   if [ $quiet -eq 1 ]; then
+      if ! [ $restrict -eq 1 -a $rc -ge $maxreturn ]; then
+         flen=`echo -n "$findres" | wc -c | tr -d ' '`;
+         flen=`expr $flen - 1`;
+         fex="findres=\`echo|awk '{print substr(\"$findres\",1,$flen)}'\`";
+         eval $fex;
+      fi
+   fi
+   echo -n "$findres";
+   if [ $restrict -eq 1 -a $rc -ge $maxreturn ]; then
+      echo -n "$toomany";
+   fi
+fi
+
+if [ $quiet -eq 0 ]; then
+   echo -n "$footer";
+fi

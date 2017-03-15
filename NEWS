@@ -1,0 +1,71 @@
+hxd NEWS - User visible changes.
+
+This is mhxd, a merge of kxd, shxd, and hxd.
+
+version 0.4.10 - 2004-1-18 JST
+* Support self loading of usericons, from avaraline.net implementation.
+* Added mkick (multi kick) option in hx
+* Specifie a pidfile with hxd -o option
+* Version update checking script with /update
+* IRC updates
+* Many, many fixes, see ChangeLog
+
+version 0.4.9 - 2003-12-19 JST
+* Setting msg=1 in account/access overrides the normal account priveledge.
+  When editing an account with a 1.2.3 client, the message priveledge is lost.
+* Fix possible hxd crash when file transfers time out.
+* Updated hx translation for new babelfish. (thanks to Brian for patch)
+* Fix freeze in hx when canceling a queued download.
+
+version 0.4.8 - 2003-12-4 JST
+* Fix compiliation of hxd (duplicate function in src/common/hxd.c)
+* Mail check on login, and other improvements to exec scripts by kang.
+* New file run/hxd/.common for variables shared by exec scripts.
+
+version 0.4.7 - 2003-12-2 JST
+* Fix for the download limit being falsely reached bug. (with pthreads/OSX?)
+* Fix default hxd.conf to point to the correct delete user script.
+
+version 0.4.6 - 2003-11-30 JST
+* newuser script is no longer run when modifying accounts.
+* Fix compilation of hx when iconv support is disabled.
+* Away now works for 1.9 "colors" (eg color=5, bit 3 for admin status)
+
+version 0.4.5 - 2003-11-25 JST
+* No major changes.
+* Remove garbage in some ghx files that prevented compilation.
+
+version 0.4.4 - 2003-11-21 JST
+* Fix bug in folder uploads where the file sizes were wrong.
+* Log format changed to "standard logging"
+* Bug fixes by kang, see ChangeLog.
+
+version 0.4.3 - 2003-11-9 JST
+* hxd.conf: moved encoding options to new text section.
+  New convert_mac option to convert Mac (C), [TM], ...
+  characters to ASCII in nicknames.
+* Folder uploads.
+* Various minor bug fixes and enhancements. See ChangeLog.
+
+version 0.4.2 - 2003-08-30 PDT
+* Fix cipher_only for non-HOPE connections.
+* Mac alias resolution and creation on OSX.
+* Finish threaded news in hxd. (patch from Patrick Enoch).
+* Better threaded news in hx and ghx.
+* Use autoconf 2.57, automake 1.7.6, libtool 1.50a
+* Fix build problems with .deps and OSX.
+
+version 0.4.1 - 2003-07-27 PST
+* Fix running out of pthreads unexpectedly.
+* Added name_lock access name/icon locking
+* Added news post (123) customisability
+* Added file name encoding conversion to hxd.
+* Improved international support in [g]hx.
+* Fix access check buttons in useredit window.
+
+version 0.4.0 - 2003-07-10 JST
+* Initial release. See ChangeLog and doc/ for details.
+* WARNING: There have been reports of the server crashing
+           when a folder download is canceled, on OSX.
+	   To disable folder downloads you must remove
+	   the access from your accounts. Or edit htxf.c

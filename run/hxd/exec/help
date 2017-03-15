@@ -1,0 +1,117 @@
+#!/bin/sh
+
+# script prefers bash
+[ -f /bin/bash ] && SHELL=/bin/bash
+
+printf "\r";
+
+case $# in
+0)
+   printf "\r¥ List of server commands (/help <command>)\r";
+   printf "   0wn       access    alert     away\r";
+   printf "   broadcast color     g0away    mon\r";
+   printf "   visible   users     exec      find\r";
+   printf "   help      uptime    uname     ?\r";
+   printf "   netstat   kick      banlist   mail\r";
+   printf "   df";
+
+   exit 0;;
+esac
+
+case $1 in
+0wn)
+   printf "\rUsage: /0wn <uid> <property>[=]<value>\r";
+   printf "Description: this is a complex command, for\r";
+   printf "   full details, read docs/Commands.";;
+access)
+   printf "\rUsage: /access <uid> <property>=<value>\r";
+   printf "Description: this is a complex command, for\r";
+   printf "   full details, read docs/Commands.";;
+alert)
+   printf "\rUsage: /alert <uid> <msg>\r";
+   printf "Description: alert produces a broadcast-like\r";
+   printf "   message to a specific connected user.";;
+away)
+   printf "\rUsage: /away\r";
+   printf "Description: makes your name color gray-out\r";
+   printf "   signifying that you are not actively doing\r";
+   printf "   anything on that server.";;
+broadcast)
+   printf "\rUsage: /broadcast <msg>\r";
+   printf "Description: broadcast sends a message to all\r";
+   printf "   connected users (cannot be replied to)";;
+color)
+   printf "\rUsage: /color <color>\r";
+   printf "Description: color changes the color of your\r";
+   printf "   name in the user list.";;
+g0away)
+   printf "\rUsage: /g0away\r";
+   printf "Description: g0away (pronounced as \"go away\")\r";
+   printf "   toggles your visibility in the user list.";;
+mon)
+   printf "\rUsage: /mon <uid>\r";
+   printf "Description: mon gives a specific connected\r";
+   printf "   user the privelege to private message.";;
+visible)
+   printf "\rUsage: /visible\r";
+   printf "Description: visible toggles your visibility\r";
+   printf "   in the user list.";;
+users)
+   printf "\rUsage: /users\r";
+   printf "Description: users allows you to see\r";
+   printf "   invisible users.";;
+exec)
+   printf "\rUsage: /exec <command>\r";
+   printf "Description: exec executes the command if\r";
+   printf "   either a binary or script exists in the\r";
+   printf "   folder named exec in the root of the shxd\r";
+   printf "   folder. This command has been obsoleted.\r";
+   printf "   You may now precede script names with a\r";
+   printf "   \`/' character to execute them.";;
+find)
+   printf "\rUsage: /find [-qv] <name>\r";
+   printf "Description: find searches the files folder\r";
+   printf "   for matches of the name passed and returns\r";
+   printf "   the matching files. -q does quiet mode. -v\r";
+   printf "   shows the version.";;
+help)
+   printf "\rUsage: /help\r";
+   printf "Description: help executes the help shell\r";
+   printf "   script or help binary in the exec folder\r";
+   printf "   of the shxd folder if it exists.";;
+uptime)
+   printf "\rUsage: /uptime [-V]\r";
+   printf "Description: executes the uptime binary if it\r";
+   printf "   exists in the exec folder at the root of\r";
+   printf "   the shxd folder.";;
+uname)
+   printf "\rUsage: /uname [-a]\r";
+   printf "Description: uname executes the uname binary\r";
+   printf "   if it exists in the exec folder at the\r";
+   printf "   root of the shxd folder.";;
+?)
+   printf "\rUsage: /? [-r]\r";
+   printf "Description: outputs a list of executable\r";
+   printf "   commands in the exec folder at the root of\r";
+   printf "   the shxd folder. the -r parameter rebuilds\r";
+   printf "   the cache for this script. it caches\r";
+   printf "   output for faster responses.";;
+netstat)
+   printf "\rUsage: /netstat\r";
+   printf "Description: outputs a list of current number\r";
+   printf "   of users connected, total active\r";
+   printf "   downloads, and total active uploads.";;
+kick)
+   printf "\rUsage /kick <uid> <reason>\r";
+   printf "\rDescription: kick a user and give him\r";
+   printf "a reason by message (and in chat). It works with /ban also.";;
+banlist)
+   printf "\rUsage /banlist give help to get help";;
+mail)
+   printf "\rUsage /mail -h to get help";;
+df)
+   printf "\rUsage /df to get disk space usage";;
+
+*)
+   printf "\rhelp: $1: unknown command";;
+esac

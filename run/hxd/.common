@@ -1,0 +1,16 @@
+#!/bin/sh
+# This file holds global common default values for the exec scripts
+# You can modify it to your needs
+
+### Global scripts settings ###
+
+PATH=/bin:/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin;export PATH
+
+# path to the accounts directory
+accountsdir="accounts";
+# path to the server log
+log="log";
+# path to the banlist
+banlist="banlist";
+# path to the exec dir
+exec="exec";

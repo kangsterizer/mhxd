@@ -1,0 +1,850 @@
+AC_PREREQ(2.52)
+AC_INIT(src/common/hxd.h)
+AM_CONFIG_HEADER(config.h)
+AC_PREFIX_DEFAULT(/usr/local)
+AC_CONFIG_AUX_DIR(cfgaux)
+AM_INIT_AUTOMAKE(hxd, 0.4.2)
+
+# m4_pattern_allow(LIBOBJS)
+# AC_SUBST(LIBOBJS)
+AC_SUBST(LIBLDADD)
+AC_SUBST(HXDLIBLDADD)
+AC_SUBST(HXLIBLDADD)
+AC_SUBST(HXTRACKDLIBLDADD)
+AC_SUBST(HXDCOMMONLDADD)
+AC_SUBST(ACCTEDITLIBLDADD)
+AC_SUBST(HXCOMMONLDADD)
+AC_SUBST(HXTRACKDCOMMONLDADD)
+AC_SUBST(GHXHXLDADD)
+AC_SUBST(CIPHERLDADD)
+AC_SUBST(COMPRESSLDADD)
+AC_SUBST(CIPHERLIBADD)
+AC_SUBST(APPLELIBADD)
+AC_SUBST(APPLELDADD)
+AC_SUBST(HXDLDFLAGS)
+AC_SUBST(HXLDFLAGS)
+AC_SUBST(WARN)
+AC_SUBST(INCLUDES)
+AC_SUBST(LDFLAGS)
+AC_SUBST(HXDINCLUDES)
+AC_SUBST(HXINCLUDES)
+AC_SUBST(COMMONINCLUDES)
+AC_SUBST(CIPHERINCLUDES)
+AC_SUBST(COMPRESSINCLUDES)
+AC_SUBST(GINCLUDES)
+AC_SUBST(COMMONLIBADD)
+AC_SUBST(PROTOLIBADD)
+AC_SUBST(HXDOBJS)
+AC_SUBST(HXOBJS)
+AC_SUBST(GHXOBJS)
+AC_SUBST(HXDLIBS)
+AC_SUBST(HXTRACKDLIBS)
+AC_SUBST(HXLIBS)
+AC_SUBST(GHXLIBS)
+AC_SUBST(CURSESLIBS)
+AC_SUBST(ACCTEDITLIBS)
+AC_SUBST(GENCONFFLAGS)
+AC_SUBST(DYNAMICLDFLAGS)
+AC_SUBST(PROTOLTLIBS)
+AC_SUBST(MODULE_FLAG)
+AC_SUBST(MODULE_HOTLINE_OBJS)
+AC_SUBST(MODULE_IRC_OBJS)
+AC_SUBST(MODULE_KDX_OBJS)
+
+AC_ARG_ENABLE(hack_hxd_optsa,	[  HXD (server) options:])
+AC_ARG_ENABLE(hxd,		[  --disable-hxd               hotline server], , enable_hxd=no)
+AC_ARG_ENABLE(tracker_register,	[  --disable-tracker-register  tracker registration code for server], , enable_tracker_register=yes)
+AC_ARG_ENABLE(htxf_queue,	[  --disable-htxf-queue        file transfer queue], , enable_htxf_queue=yes)
+AC_ARG_ENABLE(image_preview,	[  --enable-image-preview      image preview (minification with ImageMagick)], , enable_image_preview=no)
+AC_ARG_ENABLE(exec,		[  --disable-exec              remote execution of programs], , enable_exec=yes)
+AC_ARG_ENABLE(nospam,		[  --disable-nospam            spam protection], , enable_nospam=yes)
+AC_ARG_ENABLE(euid,		[  --enable-euid               set euid 0 to bind ports <= 1024], , enable_euid=no)
+AC_ARG_ENABLE(sql,		[  --enable-sql                use mysql logging], , enable_sql=no)
+AC_ARG_ENABLE(winclient_fix,	[  --disable-winclient-fix     make broken windows HL clients not display error messages when transfering files], , enable_winclient_fix=yes)
+AC_ARG_ENABLE(hotline,		[  --disable-hotline           Hotline protocol], , enable_hotline=yes)
+AC_ARG_ENABLE(irc,		[  --enable-irc                IRC protocol], , enable_irc=no)
+AC_ARG_ENABLE(kdx,		[  --enable-kdx                KDX protocol], , enable_kdx=no)
+AC_ARG_WITH(mysql_libs,		[  --with-mysql-libs=dir       use mysql libraries in dir (default=/usr/lib/mysql)], , with_mysql_libs=/usr/lib/mysql)
+AC_ARG_WITH(mysql_includes,	[  --with-mysql-includes=dir   use mysql headers in dir (default=/usr/include/mysql)], , with_mysql_includes=/usr/include/mysql)
+
+AC_ARG_ENABLE(hack_hx_opts,	[  HX (client) options:])
+AC_ARG_ENABLE(hx,		[  --enable-hx                 hotline client], , enable_hx=no)
+AC_ARG_ENABLE(tty,		[  --disable-tty               tty frontend], , enable_tty=yes)
+AC_ARG_ENABLE(gtk,		[  --enable-gtk                gtk frontend], , enable_gtk=no)
+AC_ARG_ENABLE(dulled,		[  --disable-dulled            dulled idle user icons when away], , enable_dulled=yes)
+AC_ARG_ENABLE(sound,		[  --disable-sound             soundsets], , enable_sound=yes)
+AC_ARG_ENABLE(iconv,		[  --enable-iconv              support for different charsets (Japanese)], , enable_iconv=no)
+AC_ARG_ENABLE(translate,	[  --enable-translate          babelfish translation of chat], , enable_translate=no)
+AC_ARG_ENABLE(hal,		[  --enable-hal                MegaHAL], , enable_hal=no)
+AC_ARG_ENABLE(xmms,		[  --enable-xmms               trackname command], , enable_xmms=no)
+AC_ARG_WITH(libiconv,		[  --with-libiconv[=dir]       use libiconv in dir], , with_libiconv=no)
+AC_ARG_WITH(sndplayer,		[  --with-sndplayer=player     default=play], , with_sndplayer=play)
+
+AC_ARG_ENABLE(hack_hxtrackd_opts,  [  HXTrackD (tracker server) options:])
+AC_ARG_ENABLE(hxtrackd,		[  --enable-hxtrackd           tracker server], , enable_hxtrackd=no)
+
+AC_ARG_ENABLE(hack_acctedit_opts,  [  AcctEdit (account editor) options:])
+AC_ARG_ENABLE(acctedit,         [  --enable-acctedit           acctedit], , enable_acctedit=notset)
+
+AC_ARG_ENABLE(hack_hxhxd_opts,  [  HX and HXD options:])
+AC_ARG_ENABLE(modules,		[  --enable-modules            Dynamic loadable module support], , enable_modules=no)
+AC_ARG_ENABLE(hfs,		[  --disable-hfs               Macintosh CAP/NetATalk/AppleDouble support], , enable_hfs=yes)
+AC_ARG_ENABLE(hope,		[  --enable-hope               HOPE (secure login)], , enable_hope=no)
+AC_ARG_ENABLE(cipher,		[  --enable-cipher             cipher], , enable_cipher=no)
+AC_ARG_ENABLE(idea,		[  --enable-idea               support the IDEA cipher algorithm], disable_idea=no, disable_idea=yes)
+AC_ARG_ENABLE(compress,		[  --enable-compress           compress], , enable_compress=no)
+AC_ARG_ENABLE(hldump,		[  --enable-hldump             enable hldump], , enable_hldump=no)
+AC_ARG_ENABLE(ipv6,		[  --enable-ipv6               IPv6 support. IPv4 will not work], , enable_ipv6=no)
+AC_ARG_ENABLE(unix,		[  --enable-unix               Unix socket support], , enable_unix=no)
+
+AC_ARG_WITH(pthreads,		[  --with-pthreads             use pthreads instead of fork or clone for threads], , with_pthreads=no)
+AC_ARG_WITH(clone,		[  --with-clone                use clone instead of fork for threads (Linux only)], , with_clone=no)
+AC_ARG_WITH(fork,		[  --with-fork                 use fork for threads (last resort)], , with_fork=no)
+AC_ARG_WITH(openssl_libs,	[  --with-openssl-libs=dir     use openssl libraries in dir (default=/usr/local/ssl/lib)], , with_openssl_libs=/usr/local/ssl/lib)
+AC_ARG_WITH(openssl_includes,	[  --with-openssl-includes=dir use openssl headers in dir (default=/usr/local/ssl/include)], , with_openssl_includes=/usr/local/ssl/include)
+AC_ARG_WITH(socks,		[  --with-socks[=dir]          use socks library in dir], , with_socks=no)
+AC_ARG_WITH(socks_include,	[  --with-socks-include=dir    use socks header in dir], , with_socks_include=no)
+
+AC_ARG_ENABLE(all,		[  --enable-all                configuration used by the author], , enable_all=no)
+AC_ARG_ENABLE(mingw,		[  --enable-mingw              configuration used by the author for mingw], , enable_mingw=no)
+AC_ARG_ENABLE(cygwin,		[  --enable-cygwin             configuration used by the author for cygwin], , enable_cygwin=no)
+
+if test $enable_mingw = yes; then
+	enable_hxd=yes;
+	enable_hx=yes;
+	enable_tracker_register=yes;
+	enable_hxtrackd=yes;
+	enable_acctedit=yes;
+	enable_exec=no;
+	enable_hal=yes;
+	enable_gtk=yes;
+	enable_dulled=yes;
+	enable_tty=yes;
+	enable_nospam=yes;
+	with_pthreads=yes;
+	enable_hldump=yes;
+	enable_translate=no;
+	enable_iconv=no;
+	enable_irc=yes;
+	enable_kdx=yes;
+fi
+
+if test $enable_cygwin = yes; then
+	enable_hxd=yes;
+	enable_hx=yes;
+	enable_tracker_register=yes;
+	enable_hxtrackd=yes;
+	enable_acctedit=yes;
+	enable_exec=yes;
+	with_pthreads=yes;
+	enable_hfs=yes;
+	enable_hope=yes;
+	enable_cipher=yes;
+	disable_idea=yes;
+	enable_compress=yes;
+	enable_hal=yes;
+	enable_tty=yes;
+	enable_nospam=yes;
+	enable_translate=yes;
+	enable_hldump=yes;
+	enable_iconv=no;
+	enable_irc=yes;
+	enable_kdx=yes;
+fi
+
+if test $enable_all = yes; then
+	enable_hxd=yes;
+	enable_hx=yes;
+	enable_tracker_register=yes;
+	enable_hxtrackd=yes;
+	enable_acctedit=yes;
+	enable_exec=yes;
+	enable_htxf_queue=yes;
+	with_clone=no;
+	with_pthreads=yes;
+	enable_unix=yes;
+	enable_hfs=yes;
+	enable_hope=yes;
+	enable_cipher=yes;
+	disable_idea=yes;
+	enable_compress=yes;
+	enable_hal=yes;
+	enable_gtk=yes;
+	enable_dulled=yes;
+	enable_tty=yes;
+	enable_xmms=yes;
+	enable_nospam=yes;
+	enable_translate=yes;
+	enable_hldump=yes;
+	enable_iconv=yes;
+	enable_irc=yes;
+	enable_kdx=yes;
+	enable_modules=yes;
+	enable_sql=yes;
+fi
+
+AC_CANONICAL_HOST
+
+if test "x$host_os" = "xmingw32"; then
+	on_win32=yes;
+	echo WARNING Windows detected
+fi
+
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_MAKE_SET
+AC_PROG_INSTALL
+
+if test $cross_compiling = yes; then
+	AC_CHECK_PROGS(BUILD_CC, gcc cc)
+	CC=$BUILD_CC
+fi
+
+AC_ISC_POSIX
+AC_C_CONST
+AC_C_INLINE
+AC_C_BIGENDIAN
+
+# Gerben Wierda <Gerben_Wierda@RnA.nl>
+case "$host" in
+  mab-next-nextstep3)
+    CC="$CC -arch m68k -arch i486 -arch hppa -arch sparc"
+  ;;
+esac
+
+# Set Default CFLAGS
+if test -z "$PRESET_CFLAGS"; then
+   if test "$GCC" = "yes"; then
+      case "$host" in
+      *-sun-sunos*)
+         # sunos has too many warnings for this to be useful
+         # motorola too
+         ;;
+      *m88k*)
+         # Motorola cc/ld does not like -02 but is ok on -O
+         CFLAGS=`echo $CFLAGS | sed -e 's/-O[0-9]/-O/'`
+         ;;
+      *)
+         CFLAGS="$CFLAGS -Wall"
+         ;;
+      esac
+   else
+      case "$host" in
+      *mips-sgi-irix6.*)
+         # suggested by Rafael Seidl <rafaels@cthulhu.engr.sgi.com>
+         CFLAGS="$CFLAGS -n32 -mips3 -O3 -OPT:Olimit=0:space=OFF \
+         -woff 1009,1014,1048,1110,1116,1185,1188,1204,1230,1233 \
+         -Wl,-woff,85,-woff,84,-woff,134 \
+         -nostdinc -I/usr/include -D_BSD_SIGNALS"
+         ;;
+      alpha-dec-osf4.*)
+         # Mogul says DEC compilers take both -g and -O2
+         CFLAGS=`echo $CFLAGS | sed -e 's/-g/-g3/'`
+         CFLAGS="$CFLAGS -O2"
+         ;;
+      *)
+         ;;
+      esac
+   fi
+fi
+
+# Set LDFLAGS
+if test -z "$PRESET_LDFLAGS"; then
+   if test "$GCC" = "yes"; then
+      case "$host" in
+      *)
+         # nothing
+         ;;
+      esac
+   else
+      case "$host" in
+      *mips-sgi-irix6.*)
+         # suggested by Rafael Seidl <rafaels@cthulhu.engr.sgi.com>
+         LDFLAGS="-n32 -mips3 -nostdlib -L/usr/lib32"
+         ;;
+      esac
+   fi
+fi
+
+if test $ac_cv_prog_gcc = yes; then
+	WARN='-Wall -W'
+	CFLAGS="$CFLAGS $WARN"
+else
+	GENCONFFLAGS="$GENCONFFLAGS -d";
+	AC_DEFINE(CONFIG_CONFSOFF_DYNAMIC, 1,
+		[Define if conf wanted structs need to be initialized at runtime])
+fi
+
+dnl needed for gtk
+if test "x$on_win32" = "xyes"; then
+	CFLAGS="$CFLAGS -mms-bitfields"
+fi
+
+AC_PATH_PROG(TR, tr, "/bin/tr")
+AC_DEFINE_UNQUOTED(PATH_TR, "$TR", [Path to tr])
+
+AC_TYPE_SIGNAL
+AC_TYPE_SIZE_T
+AC_CHECK_TYPE(ssize_t, long)
+AC_CHECK_TYPE(u_int8_t, unsigned char)
+AC_CHECK_TYPE(u_int16_t, unsigned short)
+AC_CHECK_TYPE(u_int32_t, unsigned int)
+AC_CHECK_TYPE(int8_t, char)
+AC_CHECK_TYPE(int16_t, short)
+AC_CHECK_TYPE(int32_t, int)
+dnl check for Unix98 socklen_t
+AC_MSG_CHECKING(for socklen_t)
+AC_TRY_COMPILE([#include <sys/socket.h>
+socklen_t x;
+],[],[AC_MSG_RESULT(yes)],[
+AC_TRY_COMPILE([#include <sys/socket.h>
+int accept (int, struct sockaddr *, size_t *);
+],[],[
+AC_MSG_RESULT(size_t)
+AC_DEFINE(socklen_t,size_t,[Define to size_t if not defined by system])], [
+AC_MSG_RESULT(int)
+AC_DEFINE(socklen_t,int,[Define to size_t if not defined by system])])])
+
+AC_CHECK_HEADERS(sys/select.h stdarg.h)
+
+dnl AC_MSG_CHECKING(for hppa)
+dnl AC_EGREP_CPP(lame,
+dnl 	[#ifdef __hppa__
+dnl		asf
+dnl 	#endif], is_hppa=yes, is_hppa=no)
+dnl if test $is_hppa = yes; then
+dnl 	AC_MSG_RESULT(yes)
+dnl 	AC_CHECK_LIB(hppa, allow_unaligned_data_access)
+dnl else
+dnl 	AC_MSG_RESULT(no)
+dnl fi
+
+if test $enable_euid = yes; then
+	AC_DEFINE(CONFIG_EUID, 1, [Define in order to setuid(0) to bind to ports <= 1024])
+fi
+
+if test $enable_iconv = yes; then
+	AC_DEFINE(CONFIG_ICONV, 1, [support for different character sets])
+fi
+if test $enable_iconv = yes -o $enable_translate = yes; then
+	HXDCOMMONLDADD="$HXDCOMMONLDADD ../common/conv.o"
+	HXCOMMONLDADD="$HXCOMMONLDADD ../common/conv.o"
+	COMMONLIBADD="$COMMONLIBADD conv.o"
+	AC_CHECK_FUNC(iconv, , with_libiconv=yes)
+	if ! test $with_libiconv = no; then
+		if ! test $with_libiconv = yes; then
+			LDFLAGS="$LDFLAGS -L$with_libiconv"
+		fi
+		if test "x$on_win32" = "xyes"; then
+			AC_CHECK_LIB(iconv.dll, iconv, HXLIBS="$HXLIBS -liconv.dll";
+						       HXDLIBS="$HXDLIBS -liconv.dll")
+			if test $ac_cv_lib_iconv_dll_iconv = no; then
+				AC_CHECK_LIB(iconv.dll, libiconv, HXLIBS="$HXLIBS -liconv.dll";
+								  HXDLIBS="$HXDLIBS -liconv.dll",
+								AC_MSG_ERROR(need iconv))
+			fi
+		else
+			AC_CHECK_LIB(iconv, iconv, HXLIBS="$HXLIBS -liconv";
+						   HXDLIBS="$HXDLIBS -liconv")
+			if test $ac_cv_lib_iconv_iconv = no; then
+				AC_CHECK_LIB(iconv, libiconv, HXLIBS="$HXLIBS -liconv";
+							      HXDLIBS="$HXDLIBS -liconv",
+							AC_MSG_ERROR(need iconv))
+			fi
+		fi
+	fi
+fi
+if test $enable_hldump = yes; then
+	AC_DEFINE(CONFIG_HLDUMP, 1, [Dump packets to file])
+	dnl HXDOBJS="$HXDOBJS hldump.o"
+	dnl HXOBJS="$HXOBJS hldump.o"
+	GHXHXLDADD="$GHXHXLDADD ../hx/hldump.o"
+fi
+if test $enable_sound = yes; then
+	AC_DEFINE(CONFIG_SOUND, 1, [Sound in hx])
+	HXOBJS="$HXOBJS sound.o"
+	GHXHXLDADD="$GHXHXLDADD ../hx/sound.o"
+fi
+if test $enable_hxd = no -a $enable_hx = no -a $enable_hxtrackd = no; then
+	if test -d src/hxd; then
+		enable_hxd=yes;
+	elif test -d src/hxtrackd; then
+		enable_hxtrackd=yes;
+	elif test -d src/hx; then
+		enable_hx=yes;
+	fi
+fi
+if test $enable_hxd = yes -a $enable_acctedit = notset; then
+	enable_acctedit=yes;
+fi
+if test $enable_ipv6 = yes; then
+	AC_DEFINE(CONFIG_IPV6, 1, [IPv6, IPv4 will not work])
+fi
+if test $enable_unix = yes; then
+	AC_DEFINE(CONFIG_UNIXSOCKETS, 1, [Unix sockets])
+fi
+if test $enable_hxd = yes; then
+	AC_DEFINE(CONFIG_HOTLINE_SERVER, 1, [hxd])
+fi
+if test $enable_hx = yes; then
+	AC_DEFINE(CONFIG_HOTLINE_CLIENT, 1, [hx])
+fi
+if test $enable_hxtrackd = yes; then
+	AC_DEFINE(CONFIG_TRACKER_SERVER, 1, [hxtrackd])
+fi
+if test $enable_tracker_register = yes; then
+	AC_DEFINE(CONFIG_TRACKER_REGISTER, 1, [hxd tracker registration])
+fi
+if test $enable_exec = yes; then
+	AC_DEFINE(CONFIG_EXEC, 1, [Remote execution of programs])
+fi
+dnl Use pthreads if the library is found
+if test $with_pthreads = no -a $with_clone = no -a $with_fork = no; then
+	AC_CHECK_LIB(pthread, pthread_create, with_pthreads=yes, with_pthreads=no)
+fi
+if test $with_pthreads = yes; then
+	AC_DEFINE(CONFIG_HTXF_PTHREAD, 1, [pthreads])
+	if test "x$on_win32" = "xyes"; then
+		HXLIBS="$HXLIBS -lpthreadGC"
+		HXDLIBS="$HXDLIBS -lpthreadGC"
+	else
+		case "$host" in
+			*-*-freebsd*)
+				HXLIBS="$HXLIBS -pthread"
+				HXDLIBS="$HXDLIBS -pthread" ;;
+			*-*-openbsd*)
+				HXLIBS="$HXLIBS -pthread"
+				HXDLIBS="$HXDLIBS -pthread" ;;
+			*)
+				HXLIBS="$HXLIBS -lpthread"
+				HXDLIBS="$HXDLIBS -lpthread" ;;
+		esac
+	fi
+else
+	if test $with_clone = yes; then
+		AC_DEFINE(CONFIG_HTXF_CLONE, 1, [clone])
+	else
+		with_fork=yes;
+	fi
+fi
+if test $with_fork = yes; then
+	AC_DEFINE(CONFIG_HTXF_FORK, 1, [fork])
+fi
+if test $enable_htxf_queue = yes; then
+	AC_DEFINE(CONFIG_HTXF_QUEUE, 1, [File transfer queue])
+	HXDOBJS="$HXDOBJS queue.o"
+fi
+if test $enable_image_preview = yes; then
+	AC_DEFINE(CONFIG_HTXF_PREVIEW, 1, [Include image minification with ImageMagick])
+fi
+if test $enable_hfs = yes; then
+	HXDCOMMONLDADD="$HXDCOMMONLDADD ../common/hfs.o"
+	HXCOMMONLDADD="$HXCOMMONLDADD ../common/hfs.o ../lib/getline.o"
+	COMMONLIBADD="$COMMONLIBADD hfs.o"
+	AC_DEFINE(CONFIG_HFS, 1, [HFS emulation])
+fi
+if test $enable_hope = yes; then
+	AC_DEFINE(CONFIG_HOPE, 1, [Hotline Open Protocol Extensions])
+fi
+if test $enable_winclient_fix = yes; then
+	AC_DEFINE(CONFIG_WINDOS_CLIENT_FIX, 1, [Hack to])
+fi
+if test $enable_nospam = yes; then
+	AC_DEFINE(CONFIG_NOSPAM, 1, [Spam protection])
+fi
+if test $enable_sql = yes; then
+	AC_DEFINE(CONFIG_SQL, 1, [SQL support])
+	if test -d $with_mysql_includes; then
+		INCLUDES="$INCLUDES -I$with_mysql_includes"
+	fi
+	if test -d $with_mysql_libs; then
+		LDFLAGS="$LDFLAGS -L$with_mysql_libs"
+	fi
+	HXDLIBS="$HXDLIBS -lmysqlclient"
+	dnl known issue that sometimes zlib is required to compile in mysql support
+	dnl check if it is installed and add it if so (just for no hassle support)
+	if test $enable_compress = no; then
+		AC_CHECK_LIB(z, deflate, HXDLIBS="$HXDLIBS -lz")
+	fi
+fi
+
+if test $enable_modules = yes; then
+	if test -d $srcdir/libltdl; then
+		AC_LIBLTDL_CONVENIENCE
+		AC_SUBST(INCLTDL)
+		AC_SUBST(LIBLTDL)
+		AC_LIBTOOL_DLOPEN
+		AC_CONFIG_SUBDIRS(libltdl)
+	else
+		AC_MSG_ERROR([libltdl not found])
+	fi
+	AC_DEFINE(CONFIG_MODULES, 1, [Dynamic modules])
+	COMMONLIBADD="$COMMONLIBADD module.o"
+	HXDCOMMONLDADD="$HXDCOMMONLDADD ../common/module.o"
+	DYNAMICLDFLAGS="$DYNAMICLDFLAGS -export-dynamic"
+	MODULE_FLAG="$MODULE_FLAG -DMODULE"
+else
+	AC_PROG_RANLIB
+fi
+AM_PROG_LIBTOOL
+
+dnl protocols
+AM_CONDITIONAL(module_hotline, test $enable_modules = yes -a $enable_hotline = yes)
+AM_CONDITIONAL(module_irc, test $enable_modules = yes -a $enable_irc = yes)
+AM_CONDITIONAL(module_kdx, test $enable_modules = yes -a $enable_kdx = yes)
+if test $enable_hotline = yes; then
+	if test $enable_modules = yes; then
+		PROTOLTLIBS="$PROTOLTLIBS hotline.la"
+		MODULE_HOTLINE_OBJS="hotline.o"
+	else
+		AC_DEFINE(CONFIG_PROTO_HOTLINE, 1, [Hotline protocol])
+		PROTOLIBADD="$PROTOLIBADD hotline.o"
+	fi
+fi
+if test $enable_irc = yes; then
+	if test $enable_modules = yes; then
+		PROTOLTLIBS="$PROTOLTLIBS irc.la"
+		MODULE_IRC_OBJS="irc.o"
+	else
+		AC_DEFINE(CONFIG_PROTO_IRC, 1, [IRC protocol])
+		PROTOLIBADD="$PROTOLIBADD irc.o"
+	fi
+fi
+if test $enable_kdx = yes; then
+	if test $enable_modules = yes; then
+		PROTOLTLIBS="$PROTOLTLIBS kdx.la"
+		MODULE_KDX_OBJS="kdx.o kdx_common.o twofish.o"
+	else
+		AC_DEFINE(CONFIG_PROTO_KDX, 1, [KDX protocol])
+		PROTOLIBADD="$PROTOLIBADD kdx.o kdx_common.o twofish.o"
+	fi
+fi
+
+if test ! $with_socks = no; then
+	if test ! $with_socks = yes; then
+		LIBS="$LIBS -L$with_socks"
+	fi
+	CFLAGS="$CFLAGS -DSOCKS -DINCLUDE_PROTOTYPES"
+	if test ! $with_socks_include = no; then
+		INCLUDES="$INCLUDES -I$with_socks_include"
+	fi
+	AC_CHECK_LIB(socks5, SOCKSinit)
+fi
+
+if test $enable_cipher = yes; then
+	if test $enable_hope = no; then
+		AC_MSG_ERROR(hope is needed for --enable-cipher)
+	fi
+	AC_DEFINE(CONFIG_CIPHER, 1, [Cipher])
+	CIPHERLDADD="$CIPHERLDADD ../cipher/cipher.o"
+	CIPHERLIBADD="$CIPHERLIBADD cipher.o"
+fi
+if test $disable_idea = yes; then
+	AC_DEFINE(CONFIG_NO_IDEA, 1, [Define if your openssl does not have IDEA])
+fi
+
+if test $enable_compress = yes; then
+	if test $enable_hope = no; then
+		AC_MSG_ERROR(hope is needed for --enable-compress)
+	fi
+	AC_DEFINE(CONFIG_COMPRESS, 1, [Compress])
+	HXDINCLUDES="$HXDINCLUDES -I../compress"
+	HXINCLUDES="$HXINCLUDES -I../compress"
+	COMMONINCLUDES="$COMMONINCLUDES -I../compress"
+	CIPHERINCLUDES="$CIPHERINCLUDES -I../compress"
+	COMPRESSLDADD="$COMPRESSLDADD ../compress/compress.o"
+	AC_CHECK_LIB(z, deflate, HXDLIBS="$HXDLIBS -lz"; HXLIBS="$HXLIBS -lz",
+		     AC_MSG_ERROR("zlib is needed for --enable-compress"))
+fi
+
+AC_CHECK_FUNCS(snprintf, aclo_snprintf=no, aclo_snprintf=yes;
+	       LIBLDADD="$LIBLDADD ../lib/snprintf.o")
+if test $ac_cv_func_snprintf = yes; then
+	AC_CHECK_FUNCS(vsnprintf, , aclo_snprintf=yes;
+				    LIBLDADD="$LIBLDADD ../lib/snprintf.o";
+				    ac_cv_func_snprintf=no)
+fi
+if test $ac_cv_func_snprintf = yes; then
+	AC_MSG_CHECKING(for non ISO C99 snprintf)
+	AC_CACHE_VAL(ac_cv_broken_snprintf,AC_TRY_RUN([
+#include <stdio.h>
+int main()
+{
+	char buf;
+	if (snprintf(&buf, 1, "ab%s", "cdefg")!=-1)
+		return 1;
+	return 0;
+}
+], ac_cv_broken_snprintf=no, ac_cv_broken_snprintf=yes, ac_cv_broken_snprintf=yes))
+	AC_MSG_RESULT($ac_cv_broken_snprintf)
+	if test $ac_cv_broken_snprintf = yes; then
+		AC_DEFINE(BROKEN_SNPRINTF, 1, [Define if snprintf is not ISO C99])
+		aclo_snprintf=yes;
+		LIBLDADD="$LIBLDADD ../lib/snprintf.o";
+	fi
+fi
+if test "x$aclo_snprintf" = "xyes"; then
+	AC_LIBOBJ([snprintf])
+fi
+
+AC_CHECK_FUNC(localtime_r, AC_DEFINE(HAVE_LOCALTIME_R),
+		aclo_localtime_r=yes;
+		LIBLDADD="$LIBLDADD ../lib/localtime_r.o")
+if test "x$aclo_localtime_r" = "xyes"; then
+	AC_LIBOBJ([localtime_r])
+fi
+AC_CHECK_FUNC(inet_aton, AC_DEFINE(HAVE_INET_ATON),
+		aclo_inet_aton=yes;
+		HXDLIBLDADD="$HXDLIBLDADD ../lib/inet_aton.o";
+		HXLIBLDADD="$HXLIBLDADD ../lib/inet_aton.o";
+		HXTRACKDLIBLDADD="$HXTRACKDLIBLDADD ../lib/inet_aton.o")
+if test "x$aclo_inet_aton" = "xyes"; then
+	AC_LIBOBJ([inet_aton])
+fi
+AC_CHECK_FUNC(fnmatch, AC_DEFINE(HAVE_FNMATCH, 1, [fnmatch]),
+		aclo_fnmatch=yes;
+		HXDLIBLDADD="$HXDLIBLDADD ../lib/fnmatch.o";
+		HXLIBLDADD="$HXLIBLDADD ../lib/fnmatch.o")
+if test "x$aclo_fnmatch" = "xyes"; then
+	AC_LIBOBJ([fnmatch])
+fi
+AC_REPLACE_FUNCS(localtime_r inet_aton)
+AC_CHECK_FUNCS(getrlimit getdtablesize)
+
+AC_CHECK_FUNC(gethostbyname, ,
+	AC_CHECK_LIB(nsl, gethostbyname,
+	HXLIBS="$HXLIBS -lnsl"
+	HXDLIBS="$HXDLIBS -lnsl"
+	HXTRACKDLIBS="$HXLIBS -lnsl"
+	GHXLIBS="$HXLIBS -lnsl")
+)
+AC_CHECK_FUNC(socket, ,
+	AC_CHECK_LIB(socket, socket,
+	HXLIBS="$HXLIBS -lsocket"
+	HXDLIBS="$HXDLIBS -lsocket"
+	HXTRACKDLIBS="$HXLIBS -lsocket"
+	GHXLIBS="$HXLIBS -lsocket")
+)
+if test "x$on_win32" = "xyes"; then
+	AC_CHECK_LIB(pdcurses, initscr, CURSESLIBS="$CURSESLIBS -lpdcurses")
+else
+	AC_CHECK_LIB(ncurses, initscr, CURSESLIBS="$CURSESLIBS -lncurses", AC_CHECK_LIB(curses, initscr, CURSESLIBS="$CURSESLIBS -lcurses"))
+fi
+AC_CHECK_HEADERS(ncurses.h)
+
+AM_CONDITIONAL(build_HXD, test $enable_hxd = yes)
+AM_CONDITIONAL(build_ACCTEDIT, test $enable_acctedit = yes)
+AM_CONDITIONAL(build_HX, test $enable_hx = yes)
+AM_CONDITIONAL(build_GHX, test $enable_gtk = yes)
+AM_CONDITIONAL(build_HXTRACKD, test $enable_hxtrackd = yes)
+AM_CONDITIONAL(build_HOPE, test $enable_hope = yes)
+AM_CONDITIONAL(build_CIPHER, test $enable_cipher = yes)
+AM_CONDITIONAL(build_COMPRESS, test $enable_compress = yes)
+AM_CONDITIONAL(build_MODULES, test $enable_modules = yes)
+if test $enable_hxd = yes; then
+	AC_CHECK_HEADERS(strings.h)
+	AC_CHECK_FUNC(realpath, AC_DEFINE(HAVE_REALPATH, 1, [realpath]),
+		aclo_realpath=yes;
+		HXDLIBLDADD="$HXDLIBLDADD ../lib/realpath.o")
+	if test "x$aclo_realpath" = "xyes"; then
+		AC_LIBOBJ([realpath])
+	fi
+	AC_CHECK_FUNC(strptime, AC_DEFINE(HAVE_STRPTIME, 1, [strptime]),
+			aclo_strptime=yes;
+			HXDLIBLDADD="$HXDLIBLDADD ../lib/strptime.o")
+	if test "x$aclo_strptime" = "xyes"; then
+		AC_LIBOBJ([strptime])
+	fi
+fi
+if test $enable_hxd = yes -o $enable_hx = yes; then
+	AC_CHECK_FUNC(basename, AC_DEFINE(HAVE_BASENAME, 1, [basename]),
+			aclo_basename=yes;
+			HXDLIBLDADD="$HXDLIBLDADD ../lib/basename.o";
+			HXLIBLDADD="$HXLIBLDADD ../lib/basename.o")
+	if test "x$aclo_basename" = "xyes"; then
+		AC_LIBOBJ([basename])
+	fi
+	AC_CHECK_FUNC(strcasestr, AC_DEFINE(HAVE_STRCASESTR, 1, [strcasestr]),
+			aclo_strcasestr=yes;
+			HXDLIBLDADD="$HXDLIBLDADD ../lib/strcasestr.o";
+			HXLIBLDADD="$HXLIBLDADD ../lib/strcasestr.o")
+	if test "x$aclo_strcasestr" = "xyes"; then
+		AC_LIBOBJ([strcasestr])
+	fi
+fi
+dnl LIBOBJS="$LIBOBJS getopt_r.o getopt1_r.o";
+AC_CHECK_FUNC(getopt_long_r, , aclo_getopt_r=yes;
+			       HXLIBLDADD="$HXLIBLDADD ../lib/getopt_r.o ../lib/getopt1_r.o";
+			       ACCTEDITLIBLDADD="$ACCTEDITLIBLDADD ../lib/getopt_r.o ../lib/getopt1_r.o")
+if test "x$aclo_getopt_r" = "xyes"; then
+	AC_LIBOBJ([getopt_r])
+	AC_LIBOBJ([getopt1_r])
+fi
+if test $enable_hx = yes; then
+	AC_CHECK_HEADERS(termcap.h)
+	AC_CHECK_FUNCS(hstrerror gethostname putenv tcgetattr tcsetattr)
+	if test $enable_translate = yes; then
+		AC_DEFINE(CONFIG_TRANSLATE, 1, [Chat translation])
+		HXOBJS="$HXOBJS translate.o"
+		GHXHXLDADD="$GHXHXLDADD ../hx/translate.o"
+	fi
+	if test $enable_hal = yes; then
+		AC_DEFINE(CONFIG_HAL, 1, [MegaHAL])
+		AC_CHECK_LIB(moto, log, HXLIBS="$HXLIBS -lmoto", AC_CHECK_LIB(m, log, HXLIBS="$HXLIBS -lm"))
+		HXOBJS="$HXOBJS hal.o"
+		GHXHXLDADD="$GHXHXLDADD ../hx/hal.o"
+	fi
+	if test $enable_xmms = yes; then
+		AC_DEFINE(CONFIG_XMMS, 1, [For the trackname command])
+		HXOBJS="$HXOBJS xmmslib.o"
+		GHXHXLDADD="$GHXHXLDADD ../hx/xmmslib.o"
+	fi
+	if test -n $with_sndplayer; then
+		AC_DEFINE_UNQUOTED(DEFAULT_SND_PLAYER, "$with_sndplayer", [Sound player])
+	fi
+	if test $enable_gtk = yes; then
+		if test "x$on_win32" = "xyes"; then
+			DEFAULTGINCLUDES="-I/mingw/include/glib-2.0 -I/mingw/include/gtk -I/mingw/include/gdk"
+			if test "x$GINCLUDES" = "x"; then
+				echo WARNING on Windows GINCLUDES may need to be set by hand since {glib,gtk}-config is not used
+				echo using default $DEFAULTGINCLUDES
+				GINCLUDES="$DEFAULTGINCLUDES"
+			fi
+			GHXLIBS="-lgtk.dll -lgdk.dll -lglib-2.0.dll"
+		else
+			GINCLUDES="$GINCLUDES `glib-config --cflags glib`"
+			GINCLUDES="$GINCLUDES `gtk-config --cflags gtk`"
+			GHXLIBS="$GHXLIBS `glib-config --libs glib`"
+			GHXLIBS="$GHXLIBS `gtk-config --libs gtk`"
+			AC_MSG_CHECKING(if gtk uses X11)
+			if gtk-config --libs gtk |grep lX11 >/dev/null; then
+				AC_DEFINE(GTK_USES_X11, 1, [If GTK uses X11])
+				AC_MSG_RESULT(yes)
+			else
+				AC_MSG_RESULT(no)
+			fi
+		fi
+	fi
+	if test $enable_dulled = yes; then
+		AC_DEFINE(CONFIG_DULLED, 1, [Dulled icons when away])
+	fi
+	if test $enable_tty = yes; then
+		AC_CHECK_LIB(termcap, tgetent, TERMCAPLIB="-ltermcap")
+		SAVE_LIBS="$LIBS"
+		LIBS="$LIBS $TERMCAPLIB"
+		AC_CHECK_LIB(readline, rl_callback_handler_install, HXLIBS="$HXLIBS -lreadline",
+			     AC_MSG_ERROR(readline needed for hx))
+		AC_CHECK_LIB(history, using_history, HXLIBS="$HXLIBS -lhistory",
+			     AC_MSG_ERROR(readline needed for hx))
+		LIBS="$SAVE_LIBS"
+		if test -n "$TERMCAPLIB"; then
+			HXLIBS="$HXLIBS $TERMCAPLIB"
+		fi
+	fi
+fi
+if test "x$on_win32" = "xyes"; then
+	HXDLIBS="$HXDLIBS -lwsock32";
+	HXLIBS="$HXLIBS -lwsock32";
+	HXTRACKDLIBS="$HXTRACKDLIBS -lwsock32";
+	ACCTEDITLIBS="$ACCTEDITLIBS -lwsock32"
+fi
+
+# test for Carbon API
+AC_MSG_CHECKING(for CoreServices (Mac OS X))
+AC_CACHE_VAL(ac_cv_coreservices,
+   AC_TRY_COMPILE([ #include <CoreServices/CoreServices.h> ],
+      [ FSRef foo; ],
+      ac_cv_coreservices="yes",
+      ac_cv_coreservices="no"
+   )
+)
+AC_MSG_RESULT($ac_cv_coreservices)
+# enable CoreServices files
+AM_CONDITIONAL(build_APPLE, test "$ac_cv_coreservices" = "yes")
+if test "$ac_cv_coreservices" = "yes"; then
+	AC_DEFINE(HAVE_CORESERVICES, 1, [Define if you have Apple CoreServices (OSX)])
+	APPLELDADD="$APPLELDADD ../apple/libapple.a"
+	HXDLDFLAGS="$HXDLDFLAGS -framework coreservices"
+	HXLDFLAGS="$HXLDFLAGS -framework coreservices"
+fi
+
+AC_CHECK_FUNC(strlcpy, , aclo_strlcpy=yes;
+		 HXDLIBLDADD="$HXDLIBLDADD ../lib/strlcpy.o";
+		 HXTRACKDLIBLDADD="$HXTRACKDLIBLDADD ../lib/strlcpy.o";
+		 HXLIBLDADD="$HXLIBLDADD ../lib/strlcpy.o")
+if test "x$aclo_strlcpy" = "xyes"; then
+	AC_LIBOBJ([strlcpy])
+fi
+
+if test $enable_hxd = yes -o $enable_hx = yes; then
+	AC_CHECK_FUNC(inet_ntoa_r, , aclo_inet_ntoa_r=yes;
+			HXDLIBLDADD="$HXDLIBLDADD ../lib/inet_ntoa_r.o";
+			HXTRACKDLIBLDADD="$HXTRACKDLIBLDADD ../lib/inet_ntoa_r.o";
+			HXLIBLDADD="$HXLIBLDADD ../lib/inet_ntoa_r.o")
+	if test "x$aclo_inet_ntoa_r" = "xyes"; then
+		AC_LIBOBJ([inet_ntoa_r])
+	fi
+	if test $enable_hope = yes; then
+		HXDINCLUDES="$HXDINCLUDES -I../cipher"
+		HXINCLUDES="$HXINCLUDES -I../cipher"
+		COMMONINCLUDES="$COMMONINCLUDES -I../cipher"
+		COMPRESSINCLUDES="$COMPRESSINCLUDES -I../cipher"
+		CIPHERLDADD="$CIPHERLDADD ../cipher/rand.o ../cipher/md5.o ../cipher/sha.o ../cipher/haval.o ../cipher/hmac.o"
+		CIPHERLIBADD="$CIPHERLIBADD rand.o md5.o sha.o haval.o hmac.o"
+		if test -d $with_openssl_libs; then
+			LDFLAGS="$LDFLAGS -L$with_openssl_libs/"
+		fi
+		if test -d $with_openssl_includes; then
+			INCLUDES="$INCLUDES -I$with_openssl_includes/"
+		fi
+		if test "x$on_win32" = "xyes"; then
+			AC_CHECK_LIB(crypto, RAND_bytes, HXDLIBS="$HXDLIBS -lcrypto -lgdi32"; HXLIBS="$HXLIBS -lcrypto -lgdi32",
+				     AC_MSG_ERROR("libcrypto from openssl is needed for --enable-hope"), -lgdi32)
+			AC_CHECK_LIB(crypto, RAND_egd, old_openssl=no, old_openssl=yes, -lgdi32)
+		else
+			AC_CHECK_LIB(crypto, RAND_bytes, HXDLIBS="$HXDLIBS -lcrypto"; HXLIBS="$HXLIBS -lcrypto",
+				     AC_MSG_ERROR("libcrypto from openssl is needed for --enable-hope"))
+			AC_CHECK_LIB(crypto, RAND_egd, old_openssl=no, old_openssl=yes)
+		fi
+		if test $old_openssl = yes; then
+			AC_DEFINE(USE_OLD_OPENSSL, 1, [Old openssl])
+		fi
+	fi
+fi
+if test $enable_tracker_register = yes; then
+	HXDOBJS="$HXDOBJS tracker.o"
+fi
+if test $enable_image_preview = yes; then
+	HXDINCLUDES="$HXDINCLUDES -I/usr/X11R6/include"
+	HXDLIBS="$HXDLIBS `Magick-config --ldflags` `Magick-config --libs`"
+fi
+
+echo Making links for some shared source files ...
+if test "x$on_win32" = "xyes"; then
+	echo WARNING on windows this does not make links but copies the files ...
+fi
+./mk-links
+
+for d in src/hxd src/protocol src/apple src/conf src/cipher src/compress src/acctedit src/hxtrackd src/hx src/ghx; do
+  if ! test -d $d; then mkdir $d; fi;
+  if ! test -f $d/Makefile.in; then touch $d/Makefile.in; fi;
+done
+
+AC_OUTPUT(
+Makefile
+src/Makefile
+src/apple/Makefile
+src/common/Makefile
+src/protocol/Makefile
+src/lib/Makefile
+src/conf/Makefile
+src/cipher/Makefile
+src/compress/Makefile
+src/hxd/Makefile
+src/acctedit/Makefile
+src/hxtrackd/Makefile
+src/hx/Makefile
+src/ghx/Makefile
+)
+
+for d in src/*; do if test -f $d/Makefile.in; then ./config.status $d/Makefile depfiles; fi; done

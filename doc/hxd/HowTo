@@ -1,0 +1,8 @@
+How do i set up files for different accounts?
+
+   You can give each account a different set of files by making a folder
+   named "files" (all lowercase, without the quotes) inside the account
+   folder.
+
+   For example: to give guests their own files
+      mkdir ./accounts/guest/files

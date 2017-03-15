@@ -1,0 +1,14 @@
+For the graphical gtk+ client you need to --enable-gtk,
+if you want the icons of idled users to be dulled --enable-dulled as well.
+
+To use icon files:
+edit $HOME/.ghxvars
+and add
+user_icon_files[0]='/home/david/zombie.rsrc'
+icon_files[0]='/home/david/icons.rsrc'
+
+user_icon_files[0] is the userlist icons to use..
+icon_files[0] is the icon set to use for buttons.
+
+get userlist icons from http://badmoon.org and the button icons from
+http://hx.fortyoz.org.

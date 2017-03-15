@@ -1,0 +1,259 @@
+options {
+	# port to listen for htlc connections
+	int port 5500;
+
+	# list of addresses to bind to. 0.0.0.0 means all addresses.
+	strarr addresses 0.0.0.0;
+
+	# --enable-unix
+	str unix_address "/tmp/.hxd.sock";
+
+	# Use 0 to act as a 1.2.3 server, 185 for 1.8.5
+	int version 0;
+
+	# users are marked away when idle for <away_time> (seconds)
+	int away_time 600;
+
+	# users are banned for <ban_time> (seconds)
+	int ban_time 1800;
+
+	# let all chat commands pass through to chat (ex. `/away')
+	bool ignore_commands 0;
+
+	# allow users to get info on themselves
+	bool self_info yes;
+
+	# kick users when their account is deleted
+	bool kick_transients yes;
+
+	# --enable-euid
+	# gid to setgid to (-1 for none)
+	int gid -1;
+	# uid to setuid to (-1 for none)
+	int uid -1;
+
+	# detach from the tty at startup
+	bool detach 0;
+
+	# try identd; disable if you have problems with firewalls
+	bool ident 1;
+
+	# dump client packets to file (--enable-hldump)
+	bool hldump 0;
+
+	# exclude thoses scripts from logging, for privacy
+	strarr exclude "mail";
+};
+
+text {
+	# file name encodings (--enable-iconv)
+	# For Japanese Windows/Mac clients with hxd on OSX
+	# server_encoding "UTF-8";
+	# client_encoding "SHIFT-JIS";
+	str server_encoding "";
+	str client_encoding "";
+
+	# 0xfd -> (c), 0xfe -> [TM], 0xff -> ... conversion
+	# only in nicknames for now
+	bool convert_mac 0;
+};
+
+modules {
+	# modules to load on startup
+	strarr load "hotline", "irc";
+
+	# modules to reload on SIGHUP
+	strarr reload "";
+};
+
+operation {
+	# enable HFS emulation
+	bool hfs yes;
+
+	# enable spam protection
+	bool nospam yes;
+
+	# enable commands
+	bool commands yes;
+
+	# enable exec commands
+	bool exec yes;
+
+	# enable tracker registration
+	bool tracker_register yes;
+
+	# enable 1.5 threaded news
+	bool tnews yes;
+};
+
+banner {
+	# for gif, use "GIFf", for jpeg, "JPEG", for url only, "URL " (or just "URL")
+	str type "";
+
+	# path to banner image file
+	str file "";
+
+	# url referred to by banner
+	str url "";
+};
+
+limits {
+	# limit on how many downloads/uploads can run at the same time
+	int total_downloads 20;
+	int total_uploads 20;
+
+	# maximum size of the download queue
+	int queue_size 40;
+
+	# limit on how many downloads/uploads can be run by each user at the same time
+	int individual_downloads 1;
+	int individual_uploads 1;
+
+	# limit on how many bytes will be sent per second with each download
+	# 0 means no limit
+	# out_Bps 1048576;
+	int out_Bps 0;
+
+	# if not 0, those uploading will be limited by this instead of out_Bps
+	# uploader_out_Bps 2097152;
+	int uploader_out_Bps 0;
+
+	# total number of active commands to allow
+	int total_exec 3;
+
+	# total number of active commands per user
+	int individual_exec 1;
+};
+
+tracker {
+	# name of server
+	str name "name";
+
+	# description of server
+	str description "description";
+
+	# trackers to send info to, format is: id:password@tracker1, id:password@tracker2, ...
+	# trackers 0x7a69:pass@127.0.0.1, 42:pass@10.0.0.1;
+	# trackers "tracked.group.org", "dmp.fimble.com";
+	# trackers 0x7a69@127.0.0.1;
+	# trackers 10.0.0.1;
+	# trackers ::1;
+	strarr trackers 127.0.0.1;
+
+	# send server info to tracker every <interval> seconds
+	int interval 240;
+	# for the tracker server, make this a little longer
+	# interval 300;
+
+	# number of users to send to tracker, -1 is real number of users
+	int nusers -1;
+
+	# password for tracker server
+	# password "password";
+	str password "";
+};
+
+paths {
+	str files "./files";
+	str accounts "./accounts";
+	str exec "./exec";
+	str news "./news";
+	str newsdir "./newsdir";
+	str agreement "./agreement";
+	str log "./log";
+	str banlist "./banlist";
+	str tracker_banlist "./tracker_banlist";
+	str hldump "./hldump";
+	str avlist "./etc/AppleVolumes.system";
+	str luser "login";
+	str nuser "./etc/newuser";
+	str duser "./etc/rmuser";
+	str modules "./lib";
+};
+
+# default permissions of created files
+permissions {
+	oint umask 0000;
+	oint files 0640;
+	oint directories 0750;
+	oint account_files 0600;
+	oint account_directories 0700;
+	oint log_files 0600;
+	oint news_files 0640;
+};
+
+files {
+	# default comment for files that have none
+	str comment "ftp.microsoft.com";
+
+	# --enable-hfs (default)
+	# format of hfs stuff: cap, double, netatalk
+	enum {
+		cap = HFS_FORK_CAP,
+		double = HFS_FORK_DOUBLE,
+		netatalk = HFS_FORK_NETATALK
+	} fork cap;
+};
+
+strings {
+# do not change the number and order of the %'s
+	str news_divider "_________________________________________________________";
+	str news_format "From %s - %s";
+	str news_time_format "\n[%c]";
+	str chat_format "\r%13.13s:  %s";
+	str chat_opt_format "\r *** %s %s";
+
+	str download_info "--------------------------------\rDownload:";
+	str upload_info " Uploads:";
+};
+
+# --enable-sql
+sql {
+	str host "localhost";
+	str user "hxd";
+	str pass "hxd";
+	str data "hxd";
+};
+
+# --enable-nospam
+spam {
+	# maximum number of connections for each address
+	int conn_max 5;
+
+	# do not allow more than one connection from the same address in <reconn_time> seconds
+	int reconn_time 2;
+
+	# kick any guest sending a message with one of these strings
+	strarr messagebot "message delivered by", "message was delivered by", "all new hotline mass";
+
+	# users without can_spam access can only
+	# send <spam_max> worth of transactions in <spam_time> seconds
+	int spam_max 100;
+	int spam_time 5;
+
+	include spamconf "spam.conf.in";
+
+	# users without can_spam access can only
+	# send <chat_max> lines of chat in <chat_time> seconds
+	int chat_max 20;
+	int chat_time 5;
+};
+
+# --enable-cipher
+cipher {
+	# entropy gathering daemon
+	# this is not needed
+	str egd_path "./entropy";
+
+	# ciphers clients are allowed to use
+	strarr ciphers "RC4", "BLOWFISH", "IDEA";
+
+	# only allow login with ciphered connections
+	bool cipher_only 0;
+};
+
+# --enable-irc
+irc {
+	# define your hostname
+	str hostname "chatonly.org";
+};

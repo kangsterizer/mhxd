@@ -1,0 +1,23 @@
+Making account based drop boxes.
+
+Q. What is an account based drop box?
+A. An account based drop box is a drop box that only the account holder can
+   view the contents of. Meaning that if you wanted to create several accounts
+   that have a drop box but you don't want them to be able to view other's
+   drop boxes. Of course though, administrators can always view everybodies
+   drop boxes at any time.
+
+Q. How do I create one? and when I create it, who owns it?
+A. An account based drop box is created by making a folder inside that person's
+   account folder. Then he/she becomes the owner of it. The folder must be
+   named "dropbox" and be inside the account folder. You then make a link or
+   alias to it in the files folder anywhere. You might want to have the name of
+   the link or alias contain the letters (in sequence, case-insensitive)
+   "drop box" so that the client recognizes it as a drop box.
+
+Q. What can be done with this dropbox?
+A. The person using this box (ie. the account holder) can upload to it (if they
+   have the privelege to upload files set on their account) and can view the
+   contents of the folder. Other than that, what they can do is based on their
+   priveleges (ie. if they have the privelege to delete files they can delete
+   files in this folder as well as any other folder).

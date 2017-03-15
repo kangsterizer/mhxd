@@ -1,0 +1,47 @@
+This documents the use of 'conf' files.
+
+While 'access' files give accounts more access and various extra features,
+'conf' files allow you to redefine configuration objects based on the account
+rather than all accounts.
+
+The basic theory of this file is that it is used to set local properties to an
+account that override properties set in hxd.conf.
+
+So far you can specify based on the account, the limit of individual uploads,
+the limit of individual downloads, and max download speed per download.
+
+Example...
+
+	limits {
+		individual_downloads 64;
+		individual_uploads 64;
+
+		individual_exec 2;
+
+		# 5 MB/s
+		out_Bps 5242880;
+		# no limit when uploading
+		uploader_out_Bps 0;
+	}
+
+	spam {
+		spam_max 1000;
+		spam_time 10;
+		chat_max 1000;
+		chat_time 10;
+	}
+
+If you place the example above in a file named "conf" (no quotes) in the users
+account folder then it will override the server settings in hxd.conf. For
+example, if you have set the server setting to only allow 1 download per
+person, every account will only be allowed to download one file at a time
+accept the admin (for whom you have blessed with the above example in their
+conf file). 
+
+It is to be set up in the same manner as hxd.conf, you must provide groupings
+(such as how individual_downloads is within the limits grouping).
+
+Lines beginning with (ignoring whitespace) the number sign (`#') are ignored.
+
+As of this writing, the items in the example are the only supported items in
+this file, but this file will be expanded upon in the future.

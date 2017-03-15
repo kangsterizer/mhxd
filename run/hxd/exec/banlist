@@ -1,0 +1,80 @@
+#!/bin/sh
+set -f
+. .common
+# banlist, kang
+# Description:
+# This script shows the banlist to admins
+# and allow them to add or delete an entry
+# then reload the server banlist
+# Parameters:
+#path to banlist from where hxd is launched
+
+if ! test -x bin/acctedit; then
+  echo -en "\rSorry, you must install acctedit to use this program." && exit 1
+fi
+
+# Check if user is admin
+if ! bin/acctedit -t 23 $accountsdir/$ACCOUNT/UserData; then
+	echo -en "\rPermission denied."
+	exit 2;
+fi
+
+
+case $1 in
+# Shows the banlist
+-l | --list) echo -en "\r\
+Server banlist:\r\
+==============\r"
+cat -n $banlist | tr '\n' '\r' | tr '	' ' '
+;;
+
+# Add an entry
+-a | --add)
+if ! [ $# -gt 5 ]; then
+	echo -en "\rNot enought arguments.\
+\rFormat: expires   name      login   user   address      message"
+	exit 1;
+fi
+	shift 1;
+	echo "$*" >> $banlist
+	echo -en "\rAdded entry: $*"
+	# you may want to replace that by kill -HUP `cat /var/run/hxd.pid`
+	killall -HUP hxd
+	;;
+
+# Remove an entry
+-d | --delete)
+if ! [ $# -eq 1 ]; then
+	delete=$(head -n $2 etc/banlist | tail -n 1)
+	echo -en "\rDeleting entry: $delete"
+	truc=$2
+	sed -e $((truc))d $banlist > /tmp/.banlist
+	mv /tmp/.banlist $banlist
+	# you may want to replace that by kill -HUP `cat /var/run/hxd.pid`
+	killall -HUP hxd
+else
+        echo -en "\r\
+Usage: banlist -a | --add expires name login user address message    Add to banlist (all arguments are mandatory)\r\
+banlist -d | --delete line                                           Delete specified line\r\
+banlist -l                                                           Shows up the banlist"
+       exit 127;
+fi
+		
+	;;
+*)
+
+
+if [ $# -gt 1 ]; then
+	echo -en "\r\
+Usage: banlist -a | --add expires name login user address message    Add to banlist (all arguments are mandatory)\r\
+banlist -d | --delete line                                           Delete specified line\r\
+banlist -l                                                           Shows up the banlist"
+	exit 127;
+fi
+  
+echo -en "\r\
+Server banlist:\r\
+==============\r"
+cat -n $banlist | tr '\n' '\r' | tr  '	' ' '
+	;;
+esac

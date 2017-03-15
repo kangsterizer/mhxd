@@ -1,0 +1,50 @@
+This document describes the details of the AppleVolumes.system file.
+
+The AppleVolumes.system file is a file that allows you to map specific
+file extensions (ie. '.txt', '.exe', etc.) to different macintosh file
+type and creator types.
+
+The Hotline Communications Clients on both Mac and PC pay attention to
+these type/creator codes for File Preview. The PC doesn't need these
+codes when downloading files. The Mac almost depends on these codes
+when downloading files because otherwise it doesn't know what
+application the file is supposed to be opened in.
+
+To enable the support of this file, you must enable hfs support. You
+can do this by running configure with the `--enable-hfs' option before
+you compile.
+
+When you upload a file from a Mac, the type/creator are stored based
+on the actual settings from the mac. So when the file is downloaded
+again, those settings will take precedence over mapping the extension
+to a set of type/creator codes.
+
+This file is exactly the same, in every way to the file of the same
+name used by the program netatalk. If you use netatalk and have a
+customized file that you want to use, you can configure hxd to use
+this same file. You can either copy the netatalk file to the etc
+folder of this daemon, or you can modify the hxd.conf file to point at
+your netatalk directly. To do the latter, open hxd.conf in your
+favourite text editor (please read the note on TextEdit in the docs
+folder). Find the `paths' section and within that, find the property
+`avlist'. This property is a string containing the full or relative
+path to the AppleVolumes.system file.
+
+Note: if you change any of the paths properties in hxd.conf you must
+fully restart the daemon. SIGHUPing the server will have no effect.
+
+In the AppleVolumes.system file, you may comment out a line by placing
+a number sign (`#') at the beginning of the file. You may have blank
+lines with no characters on them (they will be skipped). You may also
+have as little or as much whitespace in between the extension, file
+type, and creator type as you like. You may, after the creator type,
+have some whitespace, then a comment on the same line. Anything other
+than what i've described is illegal formatting and may break
+functionality.
+
+Take note that in this file you can set the type/creator code for all
+files without extensions by using the special extension `.'.
+
+If you want to change this file, remember to sighup the server when
+you finish editing. After you sighup the server, it will reread the
+file and changes will be immediate without restarting the server.

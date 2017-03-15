@@ -1,0 +1,36 @@
+#!/bin/sh
+# Make links to shared source files
+TOPDIR=`pwd`
+LN='ln -sf'
+RM='rm -f'
+if test x$1 = xrm; then
+  $RM hx/ghxrc
+  $RM src/ghx/hlclient.c
+  $RM src/ghx/hx_tty.c
+  $RM src/hxd/hldump.c
+  $RM src/hx/hldump.c
+  $RM src/hxd/hxd.c
+  $RM src/hxtrackd/hxd.c
+  $RM src/hx/hxd.c
+  $RM src/ghx/hxd.c
+else
+  if test -d $TOPDIR/run/hx && cd $TOPDIR/run/hx; then
+    $LN hxrc ghxrc
+  fi
+  if test -d $TOPDIR/src/ghx && cd $TOPDIR/src/ghx; then
+    $LN ../hx/hlclient.c hlclient.c
+    $LN ../hx/hx_tty.c hx_tty.c
+    $LN ../common/hxd.c hxd.c
+  fi
+  if test -d $TOPDIR/src/hxd && cd $TOPDIR/src/hxd; then
+    $LN ../common/hldump.c hldump.c
+    $LN ../common/hxd.c hxd.c
+  fi
+  if test -d $TOPDIR/src/hx && cd $TOPDIR/src//hx; then
+    $LN ../common/hldump.c hldump.c
+    $LN ../common/hxd.c hxd.c
+  fi
+  if test -d $TOPDIR/src/hxtrackd && cd $TOPDIR/src/hxtrackd; then
+    $LN ../common/hxd.c hxd.c
+  fi
+fi

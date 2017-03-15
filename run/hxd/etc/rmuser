@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Parameters: usual settings as in newuser :)
+DROPBOXE="files/accounts boxes/$ACCOUNT drop box"
+ACCOUNTDIR="accounts"
+# make double-sure that $ACCOUNT is not null, cause
+# if it is, you'll delete the entire account folder
+
+if [ "x$ACCOUNT" != "x" ]; then
+   # This is just a security. Remove it if you know what you are doing :)
+   [ -e $ACCOUNTDIR/$ACCOUNT/files ] && exit
+   # off by default
+   # [ -e "$ACCOUNTDIR/$ACCOUNT/dropbox" ] && exit
+   /bin/rm -Rf $ACCOUNTDIR/$ACCOUNT
+   # Unlink dropbox
+   /bin/rm "$DROPBOXE" 
+fi

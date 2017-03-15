@@ -1,0 +1,26 @@
+#!/bin/sh
+set -f
+
+# DF, kang
+# Description:
+# Very simple script which output the disk usage
+# Parameters
+# example: hide=/dev/hda, hides this partition from the list
+hide=tmpfs
+
+case $(uname) in
+	Darwin)
+	df=`/bin/df -k | grep -v $hide | tr "\n" "\r"`
+	;;
+	Linux)
+	df=`/bin/df -h | grep -v $hide | tr "\n" "\r"`
+	;;
+	FreeBSD)
+	df=`/bin/df -k | grep -v $hide | tr "\n" "\r"`
+	;;
+	*)
+	df=`/bin/df | grep -v $hide | tr "\n" "\r"`
+esac
+
+echo -en "\r$df"
+			

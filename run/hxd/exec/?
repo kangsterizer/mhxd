@@ -1,0 +1,218 @@
+#!/bin/sh
+
+. .common
+
+#################################################################
+#
+# name:    ls-exec
+# version: 1.5
+# date:    August 1, 2002
+# author:  Devin Teske
+#
+# parameters:
+#    -r   refresh the cache files (must be admin, shxd only)
+#
+# Description:
+#    This script is used to list the available commands to hxd
+#    users. It lists the contents of the current directory it
+#    resides in. Put this script in the `exec' folder of your
+#    hxd or hxd compatible server.
+#
+#    Since output formatting takes time and cpu cycles, once
+#    the output has been formatted once, it caches the
+#    the respective directory listing, and the compiled output.
+#    Upon next execution, if the current directory listing
+#    yields the same list of names as the last cached version,
+#    the output is retrieved from a stored cache file.
+#
+#    Any files not marked as executables will not be displayed.
+#    Directories are not displayed.
+#
+# Requirements:
+#    The Bourne Shell
+#    BSD compatible stream editor (`sed')
+#    BSD compatible `echo'
+#    BSD compatible `ls'
+#    BSD compatible `grep'
+#    Any form of the formatting utility `awk'
+#    The word count utility (`wc')
+#    The character translation utility (`tr')
+#
+#    each one of these items should be in your execution path
+#    with the exception of The Bourne Shell (/bin/sh).
+#
+# Details:
+#    GNU versions of the BSD compatible utilities that are
+#    required, are acceptable but not necessary. As this script
+#    limits the use of GNU features to remain compatible with
+#    BSD copies of the command line utilities.
+#
+#    If an executable file contains the asterisk character (`*')
+#    it will not be displayed in the output of files. It will
+#    seem to `magically' disappear. This is not a bug. Just
+#    avoid naming executable files with asterisks in them.
+#
+#################################################################
+
+######################## Configure options
+
+# where to store the cache test
+incache="./etc/.?inputcache";
+
+# where to store the cached response for output
+outcache="./etc/.?outputcache";
+
+# maximum size in characters the output may appear
+# the wider it is, the more columns there will be
+rowsize=45;
+
+######################## Begin Script
+
+# set our local variables
+cnl=0; tmp=0; col=0; cached=0; pad=""; output="¥";
+
+# we need to know what folder to get a listing for
+# so we strip the $0 variable to get the script name
+# then strip the script name from $0 to obtain the
+# parent directory of this script.
+
+exr=`echo $0 | tr '/' '\n' | tail -n 1`;
+exrnum=`echo $0 | tr '/' '\n' | wc -l | tr -d ' '`;
+exrnum=`expr $exrnum - 1`;
+execroot=`echo $0 | tr '/' '\n' | head -n $exrnum | tr '\n' '/'`;
+
+# obtain the contents of this directory
+cmds=`ls -CF1 $execroot | grep "*$" | tr -d "*" | grep -v "$execroot"`;
+
+# if passed the -r parameter, check for admin account
+# note: this feature requires an shxd-0.1.58 or
+# shxd-0.1.58 compatible server. on any other server,
+# you will get "permission denied" when attempting to
+# access the -r parameter.
+if [ "$1" = "-r" -a -x bin/acctedit -a "$ACCOUNT" != "" ]; then
+# disconnect_users (22)
+   if bin/acctedit -t 22 $accountsdir/$ACCOUNT/UserData; then
+      kick=1;
+   else
+      kick=0;
+   fi
+   if [ $kick -eq 0 ]; then
+      printf "\r$exr: insufficient priveleges";
+      exit 0;
+   fi
+else
+   if [ "$1" = "-r" -a "$ACCOUNT" != "" -a "$ACCOUNT" != "admin" ]; then
+      printf "\r$exr: permission denied";
+      exit 0;
+   fi
+fi
+
+# don't look for cache when passed -r
+if [ "$1" != "-r" ]; then
+
+# check for our cache file
+if [ -e $incache -a ! -d $incache ]; then
+   cache=`cat $incache`;
+   # compare last directory listing to current
+   # one to see if we can use a cached response
+   if [ "$cmds" = "$cache" ]; then
+      cached=1;
+   fi
+fi
+   
+# cache the directory contents
+echo "$cmds" > $incache;
+   
+# check for the output cache file
+if [ $cached -eq 1 -a -e $outcache -a ! -d $outcache ]; then
+   # grab the cache and output it, then exit
+   output=`cat $outcache`;
+   printf "\r$output";
+   exit 0;
+fi
+
+# end cache exclusion for -r parameter
+fi
+
+# if we had a cached copy, we would have exited by now.
+# compile the output, then cache it so we can re-use it.
+# we want to use cache, because on slower processors,
+# this takes a long time
+
+# set the introduction line
+output="$output List of exec commands:  ";
+
+# find out how many commands we have
+cmdt=`echo $cmds | wc -w | sed -e s/\\ //g`;
+
+# find the longest command name
+for cmd in $cmds; do
+   tcn=`echo $cmd | wc -c | sed -e s/\\ //g`;
+   if [ $tcn -gt $cnl ]; then
+      (( cnl = tcn - 1));
+   fi
+done
+
+# calculate how many columns can fit in the given row size
+(( cnl = cnl + 2 ));  #2: leading `/' and trailing space
+(( r = rowsize - 2 )); #2: leading spaces for indentation
+(( cols = rowsize / cnl ));
+(( t = cols * cnl + 1));
+if [ $rowsize -lt $t ]; then
+   (( cols = cols - 1 ));
+fi
+
+# alignment correction
+(( cnl = cnl + 1 ));
+
+# create a padding string to pad each column with
+while [ $tmp -lt $cnl ]; do
+   pad="$pad-";
+   (( tmp = tmp + 1 ));
+done
+
+# find out how many items there are total
+# if the last item happens to be in the last column,
+# we don't want to make a new line by accident
+items=`echo "$cmds" | wc -w | tr -d " "`;
+
+# re-initialize our temporary variable for counting
+tmp=0;
+
+# start formatting the output
+for cmd in $cmds; do
+   
+   # reset loop specific variables for each cycle
+   (( col = col + 1 )); (( tmp = tmp + 1 ));
+
+   # find length of command name and how much to pad it
+   cmdl=`echo $cmd | wc -c | tr -d " "`;
+   (( padl = cnl - cmdl - 1 ));
+
+   # add the command to the output then pad it
+   output="$output/$cmd";
+   # don't pad the last column
+   if [ $col -lt $cols ]; then
+      # darwin awk bug
+      if [ $padl -gt 1 ]; then
+         padt="padt=\`echo|awk '{print substr(\"$pad\",1,$padl)}'\`";
+         eval $padt; padt=`echo $padt | tr "-" " "`;
+         output="$output$padt";
+      else
+         output="$output ";
+      fi
+   fi
+
+   # add a new row if on the last column (but not on the last item)
+   if [ $col -ge $cols -a $tmp -lt $items ]; then
+      output="$output  ";
+      col=0;
+   fi
+
+done
+
+# cache the response for later use
+printf "$output" > $outcache
+
+# output the compiled format
+printf "\r$output";

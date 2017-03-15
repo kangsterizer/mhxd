@@ -1,0 +1,14 @@
+#!/bin/zsh
+
+. .common
+
+if [ $# -eq 0 ]; then
+echo -ne "\rPlease supply a nickname (exact or near match)";echo -ne "\rFormatting: /exec visit nickname"
+exit 123
+fi
+
+echo -ne "\rSearching for " "$1" "..."
+res=`grep -i "$1" $log | grep "name:icon:uid:login" | tail -n 1 | cut -b 1-19`
+[ -z "$res" ] && echo -en "\rNot seen today." &&  exit 123
+echo -ne "\rWe saw " "$1" " on the " "$res"
+echo -ne " for the last time.\r(if he is not currently logged on)"

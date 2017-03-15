@@ -1,0 +1,7 @@
+This document describes how to set up the netstat script.
+
+Simply open the file named "netstat.conf" in your etc
+directory. Set the uport and txport variables accordingly.
+Also set the device name to use.
+
+That is all. No need to restart hxd.

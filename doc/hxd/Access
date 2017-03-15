@@ -1,0 +1,166 @@
+This document describes the various extra priveleges you can specify to user
+accounts in a text file name access in the account folder.
+
+
+Where is this 'access' file?
+
+   The access file is a plain text file with that is in the user's account
+folder. For example, if the account is admin, you would make a text file in
+./accounts/admin/ (starting at the root of synhxd). All extra priveleges for
+the account 'admin' are specified in this file (ie. ./accounts/admin/access).
+All properties can either be 1 or 0.
+
+
+Document format...
+
+property
+
+   Default Value: the value of this property if it is not set
+   Description: a description of what the command does
+
+
+Access property list:
+--------------------------------------------------------------------------------
+
+chat_private
+
+   Default Value: 1
+   Description: if chat_private=1 then the user can initiate private chat.
+
+send_msgs
+
+   Default Value: 1
+   Description: if send_msgs=1 then the user is allowed to send private messages.
+
+user_getlist
+
+   Default Value: 1
+   Description: if user_getlist=1 then the user is allowed to view the user
+      list.
+
+file_list
+
+   Default Value: 1
+   Description: if file_list=1 then the user is allowed to see the files.
+
+file_getinfo
+
+   Default Value: 1
+   Description: if file_getinfo=1 then the user is allowed to get info on the
+      files.
+
+file_hash
+
+   Default Value: 1
+   Description: if file_hash=1 then the user is allowed to get hashed files
+
+user_visibility
+
+   Default Value: 0
+   Description: if user_visibility=1 then the user is allowed to toggle their
+      visibility in the user list.
+
+set_subject
+
+   Default Value: 0
+   Description: if set_subject=1 then the user is allowed to set the subject
+      of a private chat session.
+
+debug
+
+   Default Value: 0
+   Description: if hxd was compiled with the XMALLOC_DEBUG constant and
+      debug=1 then this command will print debugging information to the log.
+
+user_access
+
+   Default Value: 0
+   Description: if user_access=1 then the user is allowed to use the access
+      chat command (changes the access priveleges on connected users). You
+      can feed /access any one of these properties.
+      For example:
+         /access 1 user_visibility=1
+      will give the user of uid 1 the ability to toggle their visibility in
+      the user list.
+
+access_volatile
+
+   Default Value: 1
+   Description: if access_volatile=1 then the user's access priveleges can be
+      changed via a person with user_access=1 and via the mon command.
+      This setting is used to identify someone that should not be given more
+      privileges that is "dangerous" with privileges. If you set
+      access_volatile=0 then the user's access priveleges cannot be changed
+      unless they are manually changed in the access file. (see /access in
+      the HXDCommands document)
+
+user_0wn
+
+   Default Value: 0
+   Description: if user_0wn=1 then the user is allowed to use the 0wn command
+      on other connected users. (note: that is_0wn3d=1 must be true about the
+      person you are using /0wn on)
+
+is_0wn3d
+
+   Default Value: 1
+   Description: if is_0wn3d=0 then someone with user_0wn=1 cannot use the /0wn
+      command on you.
+
+can_spam
+
+   Default Value: 0
+   Description: if can_spam=1 then the user is allowed to spam. If hxd is
+      configured with --enabled-nospam then anyone spamming (what constitutes
+      a spam is defined in hxd.conf) is kicked.
+
+manage_users
+
+   Default Value: 0
+   Description: if manage_users=1 then the user is allowed to use the /users
+      command (which allows you to see invisible users). (an shxd feature)
+
+user_color
+
+   Default Value: 0
+   Description: if user_color=1 then the user is allowed to use the /color
+      command (which allows you to change the color of your name).
+
+color
+
+   Default Value: <none>
+   Description: this allows you to set the color that you should have when you
+      log in (rather than being based off of your permissions). The format is
+      simply the numeric color code (ie. putting 'color=0' in your access
+      file will make you black on login regardless of hor many privs you
+      have). This may be useful if you do not want to be known as the admin.
+
+icon
+
+   Default Value: <none>
+   Description: this allows you to set the icon that you should have when you
+      log in (rather than being passed by the client at login time). The
+      format is simply the id of the icon (ie. putting 'icon=190' in your
+      access file will give you the icon id 190 when you log in regardless of
+      what your client passed). Note: this does not affect your ability to
+      change your icon. You can always change your icon.
+
+info_get_address
+
+   Default Value: 1
+   Description: this allows you to set whether a user that can get info on
+      people connected to the server sees the ip address and host name of that
+      client. (shxd 0.2.6 addition)
+
+info_get_login
+
+   Default Value: 1
+   Description: this allows you to set whether a user that can get info on
+      people connected to the server sees the login name of the account that
+      client is using and has logged in under. (shxd 0.2.6 addition)
+
+name_lock
+
+  Default Value: 0
+  Description: this lock the current client name. User can't change it.
+  (kxd addition)

@@ -1,0 +1,17 @@
+This document describes the details of using TextEdit on Mac OS X.
+
+TextEdit on Mac OS X can sometimes break functionality on programs
+that run on a UNIX command interface (like this one). The reason is,
+that when reading a configuration file, it delimits the file by the
+Line Feed character. The Line Feed character is the standard "new
+line" character.
+
+On Macintosh, the "new line" character is the Carriage Return. On
+Windows platforms the "new line" character is both the Line Feed and
+the Carriage Return characters combined.
+
+TextEdit has two modes to it. Rich Text and Plain Text. In Rich Text
+mode, it uses the Carriage Return for new lines. This will break the
+file and make it unreadable to this program. You want to edit the
+file in Plain Text mode. You can do this by selecting Plain Text from
+one of the menus in the menubar.

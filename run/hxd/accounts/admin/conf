@@ -1,0 +1,4 @@
+limits {
+	individual_downloads 2;
+	individual_uploads 2;
+};

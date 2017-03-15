@@ -1,0 +1,39 @@
+Problems encountered when building hxd on some old platforms.
+
+AIX
+===
+due to bugs in L. Ron Hubbard knows what, configure will
+generate a broken config.h on a version of AIX.
+
+change:
+#define u_int8_t unsigned char char
+#define u_int16_t unsigned short short
+#undef u_int32_t
+#undef HAVE_SYS_SELECT_H
+
+to:
+#define u_int8_t unsigned char
+#define u_int16_t unsigned short
+#define u_int32_t unsigned int
+#define HAVE_SYS_SELECT_H
+
+BSDI
+====
+gcc version 2.7.2.1 on the BSDI system I used did not compile
+hxd correctly.
+gcc 1.42 worked, on the system i used this was `cc'.
+
+HPUX
+====
+with sql you might need to link with -lm
+
+NextStep
+========
+use gcc -posix
+malloc does not work when linking with -lposix, so you must extract the object
+files needed from libposix.a and link with those.
+
+OpenBSD / gcc 2.8.1
+===================
+On OpenBSD with gcc 2.8.1, if you get a core dump in hlwrite, try compiling
+without optimization, this works a little better, but get a working compiler.

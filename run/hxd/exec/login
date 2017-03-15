@@ -1,0 +1,30 @@
+#!/bin/sh
+
+. .common
+
+# output the local server time
+echo -n "Welcome to `hostname`: `date | tr -d '/n'`";
+echo -n "Uptime: mhxd $VERSION has been up for $UPTIME"
+
+# check the user's mail
+if [ "$ACCOUNT" != "guest" ]; then
+$exec/mail
+if [ -d $accountsdir/$ACCOUNT/mbox ]; then
+        first=0
+        for i in `ls accounts/$ACCOUNT/mbox`; do
+                if [ $first == "1" ]; then
+                        echo -en ", $i"
+                else
+                        echo -en ": $i"
+                        first=1
+                fi
+
+        done
+fi
+fi
+
+# execute any user-script if there is one
+if [ -f $accountsdir/$ACCOUNT/login ]; then
+        $accountsdir/$ACCOUNT/login
+fi
+

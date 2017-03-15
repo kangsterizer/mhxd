@@ -1,0 +1,83 @@
+This file mostly pertains to people compiling the server but should make
+good bedtime study for people interested in the process.
+
+compress isn't working when i log in
+====================================
+
+In order to enable compress techniques you must log into a hope'd server with
+a hope'd client (and both compress'd server and client). Then you can use
+compress. I'll work on a fix for this, but it may be both a client problem
+and server problem or either one, i don't know right now.
+
+find isn't working and says something about usage
+=================================================
+
+The find tool that the script uses in your Operating System is likely based
+on BSD standards and therefore is currently not supported. I tried to support
+it but for some reason or another has broken recently. Just do what everybody
+else does and go to http://synhxd.sf.net and download the prepackaged update
+for Mac OS X (if that is what you are using). If you are on another BSD
+flavored operating system, head on over to freshmeat.net to grab the source
+and compile it. Direct link: http://freshmeat.net/projects/findutils/
+
+btw, don't be lazy, just install them, you'll be glad you did, they have
+way more options than your BSD compatible one including all the options you
+are used to.
+
+Can't Connect to Server
+=======================
+
+Here's a list of simple things to check:
+
+Check your port setting in hxd.conf, sometimes i forget to revert it back to
+5500 before i release (as I test the sources on 5600 before release). Next,
+check your log to see if it was able to correctly bind to the address and
+port specified. The log should say so if it was unable to do so. Lastly, make
+sure that your firewall (if you have one) is set up to allow the connection.
+
+Netstat Kills Uploads
+=====================
+
+Upon release of 0.1.58, it was tested on OpenBSD 3.0. Whenever the netstat
+command was called, it would kill any active file transfers. The cause of
+this error is unknown and could not be fixed at the time of this writing.
+The problem could not be replicated on any other server type. You should
+not have anything to worry about if you are not running OpenBSD 3.0. If
+this does occur to you, simply disable the netstat script by moving it
+out of your exec directory.
+
+- update -
+
+It is now believed to be a network transport bug related to OpenBSD 3.0.
+Only current solution is to delete the netstat script from your exec dir
+and avoid using it at all costs.
+
+Can't delete files
+==================
+
+It has been known that if you don't enable hfs support (--enable-hfs) it might
+occur that you are not given the option to delete files (even if you have full
+priveleges on your account). The solution is to enable hfs support.
+
+Can't get info on files
+=======================
+
+This is the result of not enabling hfs support. What's that? You say you
+enabled hfs support? Think again, this bug does not occur unless you forgot
+to enable hfs. Check your config.status file header to see what you compiled
+your binary with. If it says you did `--enable-hfs' then try running
+`make distclean' from the root of the hxd folder and re-doing everything.
+
+Mac OS X
+========
+***** /find *****
+
+Mac OS X has a BSD find version. It doesn't support -iname (case-
+insensitive searching). The find script will work fine with your built-in
+find but will disable case-insensitive searching.
+
+If you wish to upgrade the find utility in OS X (darwin), it's a very
+easy process. Simply download the GNU find 4.1 Darwin that i packaged,
+then run install.sh
+
+http://synhxd.sourceforge.net/darwin_gnufind.tgz

@@ -1,0 +1,30 @@
+Features and bugfixes to be done in hxd.
+
+hxd
+===
+P2P
+Server networking
+Use sendfile/mmap
+OSX native resource fork support
+OSX GUI
+Better Windows support
+- A detailed document
+- Surveillance bot function
+- Multi account management
+- Web base account management system (phpHxAdmin ?)
+- The mail notice function of the newly uploaded file
+- Carracho protocol support (--enable-carracho)
+- Gateway with OpenNap
+D port
+
+hx/ghx
+======
+Better file browser
+numbers in file listings
+P2P
+Check uids in messages to see if they have disconnected
+Fix crashes due to ghx threaded news code
+Better ghx options
+upload throttling in client
+- hx client on Emacs (hx.el)
+gtk2

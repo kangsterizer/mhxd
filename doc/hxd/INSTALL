@@ -1,0 +1,71 @@
+Installing
+==========
+
+Installing this binary is quite easy. You can move the entire
+hxd folder anywhere you like on your hard drive.
+
+Brushing up
+===========
+
+Make sure to read everything in th `doc' folder.
+
+Configuring
+===========
+
+Before you run your hotline server, you need to configure it.
+Open the file named `hxd.conf'. Most importantly you need to
+edit the port your server runs on. The default is 5500.
+
+You will see an entry like the following (near the top of
+the hxd.conf file):
+
+     port 5500;
+
+This line tells hxd what port to run on. Feel free to make
+any other changes you desire before starting your server.
+
+Running
+=======
+
+To run your hxd (or compatible server), simply open a terminal
+window and go to your folder on the command line. Then type
+the following commands (do not type the percent sight):
+
+     % ./hxd&
+
+This will launch hxd in the background.
+
+Stopping the Server
+===================
+
+You need to locate your server in a list of running
+applications.  To do this, open a terminal window. On the
+command line, type the following (do not type percent sign):
+
+     % ps ax | grep hxd
+
+You will receive a message resembling the following text:
+
+     2529  ??  S      5:12.48 ./hxd
+     5439 std  RV+    0:00.34 grep hxd
+
+The test in the far right column is the command you typed.
+Since you launched it with `./hxd' the top one is the
+running program. To stop it, you need the numbers in the
+far left column (called a pid or process id). In this case
+it would obviously be 2529. So to kill your hxd, you would
+say on the command line (without the percent sign):
+
+     % kill -9 2529
+
+Reconfiguring
+=============
+
+If you make a change to your hxd.conf file, the server will
+not automatically reload it. You have to tell it to reload
+it. To reload it, you need the pid of your running server.
+To get the pid, refer to the above section (`Quitting the
+Server'). Once you have the pid, type the following on the
+command line (without percent sign)(using 2529 as example):
+
+     % kill -HUP 2529

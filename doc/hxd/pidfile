@@ -1,0 +1,21 @@
+This document explains how to create a pidfile from hxd.
+
+When you launch hxd you can pass it a parameter. Here is the
+syntax of the hxd binary.
+
+./hxd -o pidfile
+
+If you call hxd like this, for example:
+
+./hxd -o /var/run/hxd.pid
+
+hxd will output it's pid to the file at /var/run/hxd.pid.
+The overall advantages of this feature are the ability
+to create rc scripts for hxd.
+
+Further details on this process will be documented in a
+later revision.
+
+An rc script has already been created for you and is in
+the `rc' directory. Also, read the `README' file in that
+directory for instructions on how to use it.

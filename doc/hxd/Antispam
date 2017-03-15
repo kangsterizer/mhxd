@@ -1,0 +1,23 @@
+To use antispam, enable it in hxd.conf.
+Then configure the spam section of hxd.conf to your needs.
+the format is like this:
+
+spamconf
+TransID   SpamCount  Comment
+      0   10         # default
+    101   20         # NewsGet
+    .
+    .
+    .
+;
+
+The comment is just for you to know what it is about. The transaction id (transid) is the transaction. You must terminate the table with a ';'.
+
+You can set the spam_max and spam_time values to control the maximum spam count that users can reach in a certain interval.
+
+Here's how it works:
+Hotline is made by transaction, each action has a corresponding transaction. When the transaction specified in spam.conf happens, the client SpamCurrent value is increased by the SpamCount given to that transaction. If ever SpamCurrent >= SpamMax, the client gets kicked. Each SpamCheck seconds, SpamCurrent is resetted to zero. If no SpamCount value is given for a transaction (because not defined in spamconf), it has a default value of 10.
+
+You may also notice that accounts having 'can_spam=1' in their access
+won't get kicked. Also, those account holders won't be banned if they
+reconnect very fast.

@@ -1,0 +1,33 @@
+#!/bin/sh
+# the current working directory is always where hxd was started from
+
+# PARAMETERS
+# Where to link the dropbox (usually in files)
+DROPBOXE="./files/account boxes/$ACCOUNT drop box"
+# Enforce special rights for admin/members overriding possible manual settings when creating new account
+CHECKRIGHTS=0
+
+# Check thoses files if you want to change the defaults rights for members/admin (to use with CHECKRIGHTS=1)
+source ./etc/skel/.config
+source ./etc/skel.admin/.config
+
+# You need to have acctedit compiled and installed for admin/member separation to work
+# disconnect_users (22)
+if bin/acctedit -t 22 $ACCOUNTDIR/$ACCOUNT/UserData; then
+	admin=1;
+else
+	admin=0;
+fi
+
+
+if [ $admin -eq 1 ]; then
+	/bin/cp -r ./etc/skel.admin/* $ACCOUNTDIR/$ACCOUNT
+	/bin/mkdir "$DROPBOXE"
+	/bin/ln -s "$DROPBOXE" $ACCOUNTDIR/$ACCOUNT/dropbox
+	[ $CHECKRIGHTS -eq 1 ] && adminrights $ACCOUNTDIR/$ACCOUNT/UserData
+else
+	/bin/cp -r ./etc/skel/* $ACCOUNTDIR/$ACCOUNT
+	/bin/mkdir "$DROPBOXE"
+	/bin/ln -s "$DROPBOXE" $ACCOUNTDIR/$ACCOUNT/dropbox
+	[ $CHECKRIGHTS -eq 1 ] && memberrights $ACCOUNTDIR/$ACCOUNT/UserData
+fi
