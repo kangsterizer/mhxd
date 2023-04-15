@@ -1,0 +1,33 @@
+name: checks
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: hxd
+      run: |
+        ./configure --enable hxd --enable-irc
+        make
+        make install
+
+    - name: hx
+      run: |
+        ./configure --enable hx
+        make
+        make install
+
+    - name: hxtrackerd
+      run: |
+        ./configure --enable-hxtrackd
+        make
+        make install
