@@ -10,8 +10,8 @@ static char * getHost (htlc_t *htlc);
 //static char * satanize_nick (htlc_t *htlc);
 
 static void irc_join (htlc_t *htlc, char *cmd, char *arg);
-
-
+static void snd_user_part (struct htlc_conn *to, struct htlc_conn *parting);
+static void snd_user_change (htlc_t *htlc, char *arg);
 
 
 /* IRC PROTOCOL NUMERIC COMMANDS */
