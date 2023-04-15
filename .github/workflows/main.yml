@@ -16,13 +16,13 @@ jobs:
 
     - name: hxd
       run: |
-        ./configure --enable hxd --enable-irc --disable-hfs
+        ./configure --enable-hxd --enable-irc --disable-hfs
         make
         make install
 
     - name: hx
       run: |
-        ./configure --enable hx --disable-hfs
+        ./configure --enable-hx --disable-hfs
         make
         make install
 
