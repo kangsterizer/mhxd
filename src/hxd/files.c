@@ -1891,9 +1891,9 @@ rcv_folder_get (struct htlc_conn *htlc)
 		if (S_ISDIR(sb.st_mode))
 			continue;
 		data_size = sb.st_size;
-		rsrc_size = resource_len(pathbuf);
+		rsrc_size = sizeof(pathbuf);
 		size += (data_size - data_pos) + (preview ? 0 : (rsrc_size - rsrc_pos));
-		size += 133 + ((rsrc_size - rsrc_pos) ? 16 : 0) + comment_len(pathbuf);
+		size += 133 + ((rsrc_size - rsrc_pos) ? 16 : 0) + strlen(pathbuf);
 	}
 	closedir(dirp);
 

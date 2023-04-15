@@ -442,9 +442,9 @@ folder_getpaths (u_int32_t *npathsp, char *path)
 			pf->total_size = 0;
 		} else {
 			data_size = sb.st_size;
-			rsrc_size = resource_len(pathbuf);
+			rsrc_size = sizeof(pathbuf);
 			size = (data_size - data_pos) + (preview ? 0 : (rsrc_size - rsrc_pos));
-			size += 133 + ((rsrc_size - rsrc_pos) ? 16 : 0) + comment_len(pathbuf);
+			size += 133 + ((rsrc_size - rsrc_pos) ? 16 : 0) + strlen(pathbuf);
 			pf->type = 0;
 			pf->data_size = data_size;
 			pf->rsrc_size = rsrc_size;
