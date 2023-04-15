@@ -106,7 +106,7 @@ inaddr2str (char abuf[HOSTLEN+1], struct SOCKADDR_IN *sa)
 #ifdef CONFIG_IPV6
 	inet_ntop(AFINET, (char *)&sa->SIN_ADDR, abuf, HOSTLEN+1);
 #else
-	inet_ntoa_r(sa->SIN_ADDR, abuf, 16);
+	inet_ntoa(sa->SIN_ADDR, abuf, 16);
 #endif
 }
 
