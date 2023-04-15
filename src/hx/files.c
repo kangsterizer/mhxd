@@ -1472,7 +1472,9 @@ get_thread (void *__arg)
 	u_int32_t pos, len, tot_len;
 	int s, f, r, retval = 0;
 	u_int8_t typecrea[8], buf[1024];
+#if defined(CONFIG_HFS)
 	struct hfsinfo fi;
+#endif
 
 	s = htxf_connect(htxf);
 	if (s < 0) {
@@ -1637,7 +1639,9 @@ put_thread (void *__arg)
 	struct htxf_conn *htxf = (struct htxf_conn *)__arg;
 	int s, f, retval = 0;
 	u_int8_t buf[512];
+#if defined(CONFIG_HFS)
 	struct hfsinfo fi;
+#endif
 
 	s = htxf_connect(htxf);
 	if (s < 0) {
@@ -1962,8 +1966,8 @@ rcv_task_file_put (struct htlc_conn *htlc, struct htxf_conn *htxf)
 	htxf->rsrc_pos = rsrc_pos;
 	if (!stat(htxf->path, &sb))
 		htxf->data_size = sb.st_size;
-	htxf->rsrc_size = resource_len(htxf->path);
-	htxf->total_size = 133 + ((htxf->rsrc_size - htxf->rsrc_pos) ? 16 : 0) + comment_len(htxf->path)
+	htxf->rsrc_size = sizeof(htxf->path);
+	htxf->total_size = 133 + ((htxf->rsrc_size - htxf->rsrc_pos) ? 16 : 0) + strlen(htxf->path)
 			 + (htxf->data_size - htxf->data_pos) + (htxf->rsrc_size - htxf->rsrc_pos);
 	htxf->ref = ref;
 	hx_printf_prefix(htlc, 0, INFOPREFIX, "put: %s; %u bytes\n",
