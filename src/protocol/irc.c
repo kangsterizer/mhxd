@@ -31,12 +31,13 @@ static void *
 cr_to_lf ( char *str )
 {
 	u_int8_t i = 0;
-	while (str[i] != NULL) {
+	while (str[i] != 0) {
 		if (str[i] == '\r') {
 			str[i] = '\n';
 		}
 		i++;
 	}
+	return;
 }
 
 
@@ -152,7 +153,7 @@ do_command (htlc_t *htlc, char *linep)
 			
 		case 'Q':
 			if (!strncmp(cmd, "QUIT", 4)) {
-				snd_user_part(htlc);
+				snd_user_part(htlc, htlc);
 				htlc_close(htlc);
 			}
 			break;
