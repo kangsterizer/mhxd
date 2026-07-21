@@ -776,7 +776,7 @@ if test "x$aclo_strlcpy" = "xyes"; then
 	AC_LIBOBJ([strlcpy])
 fi
 
-if test $enable_hxd = yes -o $enable_hx = yes; then
+if test $enable_hxd = yes -o $enable_hx = yes -o $enable_hxtrackd = yes; then
 	AC_CHECK_FUNC(inet_ntoa_r, , aclo_inet_ntoa_r=yes;
 			HXDLIBLDADD="$HXDLIBLDADD ../lib/inet_ntoa_r.o";
 			HXTRACKDLIBLDADD="$HXTRACKDLIBLDADD ../lib/inet_ntoa_r.o";
