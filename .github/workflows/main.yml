@@ -14,6 +14,18 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    # The generated autotools files (configure, Makefile.in, libltdl/, ...)
+    # are no longer committed, so regenerate them. autogen.sh runs
+    # `libtoolize --ltdl` (to recreate the libltdl convenience subdir that
+    # configure.in's AC_CONFIG_SUBDIRS(libltdl) needs) and then the aclocal
+    # / autoheader / automake / autoconf sequence — a plain `autoreconf`
+    # can't rebuild libltdl, so use autogen.sh.
+    - name: Bootstrap autotools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y autoconf automake libtool libreadline-dev
+        ./autogen.sh
+
     - name: hxd
       run: |
         ./configure --enable-hxd --enable-irc --disable-hfs
