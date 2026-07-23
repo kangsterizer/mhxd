@@ -381,63 +381,73 @@ paths_free (void *p)
 	free(pf);
 }
 
-/* Returns a sorted path array */
-static struct path_file **
-folder_getpaths (u_int32_t *npathsp, char *path)
+/* Growable NULL-terminated path_file array used by the recursive walk. */
+struct pf_list {
+	struct path_file **v;
+	u_int32_t n, cap;
+};
+
+static int
+pf_list_add (struct pf_list *l, struct path_file *pf)
+{
+	if (l->n >= l->cap) {
+		u_int32_t nc = l->cap ? l->cap * 2 : 16;
+		struct path_file **nv;
+
+		nv = realloc(l->v, sizeof(struct path_file *) * (nc + 1));
+		if (!nv)
+			return -1;
+		l->v = nv;
+		l->cap = nc;
+	}
+	l->v[l->n++] = pf;
+	return 0;
+}
+
+/* Depth-first pre-order walk of the tree under dirpath: append a folder
+ * marker (type 1) for each subdirectory *before* its contents, and a file
+ * entry (type 0) for each regular file. root_len is the length of the
+ * transfer root, so path[noff] is the start of the root-relative path,
+ * which contains '/' separators for nested entries. Emitting folders
+ * before their contents lets the receiver mkdir the directory before any
+ * file is written under it. */
+static void
+folder_walk (struct pf_list *l, u_int32_t root_len, char *dirpath)
 {
 	DIR *dir;
 	struct dirent *de;
 	struct stat sb;
-	u_int32_t nfiles, i;
-	struct path_file **paths = 0;
 	char pathbuf[MAXPATHLEN];
 	u_int32_t data_size, rsrc_size, size;
 	u_int32_t data_pos = 0, rsrc_pos = 0;
-	struct path_file *pf;
 	u_int16_t preview = 0;
+	struct path_file *pf;
 
-	dir = opendir(path);
+	dir = opendir(dirpath);
 	if (!dir)
-		return 0;
-	/* Read the number of entries in the directory */
-	nfiles = 0;
+		return;
 	while ((de = readdir(dir))) {
 		if (de->d_name[0] == '.')
 			continue;
-		nfiles++;
-	}
-	rewinddir(dir);
-	paths = malloc(sizeof(char *) * (nfiles + 1));
-	if (!paths) {
-		*npathsp = 0;
-		return 0;
-	}
-	paths[0] = 0;
-	i = 0;
-	while ((de = readdir(dir))) {
-		if (de->d_name[0] == '.')
-			continue;
-		snprintf(pathbuf, sizeof(pathbuf), "%s/%s", path, de->d_name);
+		snprintf(pathbuf, sizeof(pathbuf), "%s/%s", dirpath, de->d_name);
 		if (stat(pathbuf, &sb))
 			continue;
-		if (i >= nfiles) {
+		pf = malloc(SIZEOF_PATH_FILE + strlen(pathbuf) + 1);
+		if (!pf)
 			break;
-		}
-		pf = malloc(SIZEOF_PATH_FILE + strlen(pathbuf)+1);
-		paths[i] = pf;
-		if (!pf) {
-			t_paths_free(paths);
-			return 0;
-		}
-		pf->nlen = strlen(de->d_name);
-		pf->noff = strlen(path)+1;
 		strcpy(pf->path, pathbuf);
-		i++;
+		pf->noff = root_len + 1;
+		pf->nlen = strlen(pathbuf) - (root_len + 1);
 		if (S_ISDIR(sb.st_mode)) {
 			pf->type = 1;
 			pf->data_size = 0;
 			pf->rsrc_size = 0;
 			pf->total_size = 0;
+			if (pf_list_add(l, pf)) {
+				free(pf);
+				break;
+			}
+			folder_walk(l, root_len, pathbuf);
 		} else {
 			data_size = sb.st_size;
 #if defined(CONFIG_HFS)
@@ -455,15 +465,38 @@ folder_getpaths (u_int32_t *npathsp, char *path)
 			pf->data_size = data_size;
 			pf->rsrc_size = rsrc_size;
 			pf->total_size = size;
+			if (pf_list_add(l, pf)) {
+				free(pf);
+				break;
+			}
 		}
 	}
 	closedir(dir);
-	paths[i] = 0;
+}
 
-	qsort(paths, nfiles, sizeof(struct path_file *), paths_compare);
-	*npathsp = nfiles;
+/* Returns a NULL-terminated path array walked recursively (DFS pre-order).
+ * Unlike the old single-level version, this descends into subdirectories
+ * so folder downloads carry the whole tree; each entry's path[noff] is the
+ * full root-relative path (with '/' for nested entries) and folder_send
+ * splits it into pathcount components. */
+static struct path_file **
+folder_getpaths (u_int32_t *npathsp, char *path)
+{
+	struct pf_list l = { 0, 0, 0 };
 
-	return paths;
+	folder_walk(&l, strlen(path), path);
+	if (!l.v) {
+		/* Empty folder: hand back a valid one-slot NULL-terminated
+		 * array so folder_send streams zero files cleanly. */
+		l.v = malloc(sizeof(struct path_file *));
+		if (!l.v) {
+			*npathsp = 0;
+			return 0;
+		}
+	}
+	l.v[l.n] = 0; /* pf_list_add over-allocates by one for this */
+	*npathsp = l.n;
+	return l.v;
 }
 
 struct next_file_info {
@@ -513,15 +546,41 @@ folder_send (struct htxf_conn *htxf, u_int8_t *buf, struct watch *wp)
 					retval = 0;
 					goto ret;
 				}
-				nfi = (struct next_file_info *)buf;
-				nfi->len = htons(7 + pf[curfile]->nlen);
-				nfi->type = pf[curfile]->type ? htons(1) : 0;
-				nfi->pathcount = htons(1);
-				buf[6] = 0;
-				buf[7] = 0;
-				buf[8] = (u_int8_t)pf[curfile]->nlen;
-				memcpy(buf+9, pf[curfile]->path+pf[curfile]->noff, (u_int32_t)buf[8]);
-				socket_write(s, buf, 9 + pf[curfile]->nlen);
+				{
+					char *rel = (char *)(pf[curfile]->path + pf[curfile]->noff);
+					u_int16_t rel_len = pf[curfile]->nlen;
+					u_int16_t pathcount = 1, ci, cstart = 0, total;
+					u_int8_t *w;
+
+					/* pathcount = number of '/'-separated path
+					 * components (1 for a top-level entry, more for a
+					 * nested one). */
+					for (ci = 0; ci < rel_len; ci++)
+						if (rel[ci] == '/')
+							pathcount++;
+					nfi = (struct next_file_info *)buf;
+					nfi->type = pf[curfile]->type ? htons(1) : 0;
+					nfi->pathcount = htons(pathcount);
+					/* Each component: 2 zero bytes + a length byte +
+					 * the name bytes. */
+					w = buf + 6;
+					for (ci = 0; ci <= rel_len; ci++) {
+						if (ci == rel_len || rel[ci] == '/') {
+							u_int16_t clen = ci - cstart;
+							*w++ = 0;
+							*w++ = 0;
+							*w++ = (u_int8_t)clen;
+							memcpy(w, rel + cstart, clen);
+							w += clen;
+							cstart = ci + 1;
+						}
+					}
+					total = (u_int16_t)(w - buf);
+					/* len mirrors the old `7 + nlen` for one component:
+					 * every byte written past the 2-byte len field. */
+					nfi->len = htons((u_int16_t)(total - 2));
+					socket_write(s, buf, total);
+				}
 				break;
 			case FILE_RESUME:
 				r = socket_read(s, &len, sizeof(len));
