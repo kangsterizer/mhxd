@@ -356,11 +356,19 @@ extern const char *hxd_version;
 
 extern char **hxd_environ;
 
-/* Misc. library prototypes */
-#if (defined(CONFIG_HOTLINE_SERVER) || defined(CONFIG_HOTLINE_CLIENT))
+/* Misc. library prototypes. inaddr2str() (common/hxd.c) uses inet_ntoa_r
+ * and is linked into every binary — including hxtrackd — so its prototype
+ * must be visible for the tracker build too, not just the hotline
+ * server/client. basename stays server/client-only: the tracker build
+ * doesn't run the basename configure check, so declaring it here would
+ * conflict with the system prototype. */
+#if (defined(CONFIG_HOTLINE_SERVER) || defined(CONFIG_HOTLINE_CLIENT) \
+     || defined(CONFIG_TRACKER_SERVER))
 #if !defined(HAVE_INET_NTOA_R)
 extern int inet_ntoa_r (struct in_addr in, char *buf, size_t buflen);
 #endif
+#endif
+#if (defined(CONFIG_HOTLINE_SERVER) || defined(CONFIG_HOTLINE_CLIENT))
 #if !defined(HAVE_BASENAME)
 extern char *basename (char *path);
 #endif
