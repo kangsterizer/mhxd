@@ -1916,6 +1916,8 @@ rcv_icon_set (struct htlc_conn *htlc)
 
 	/* tell everyone that this guy changed icon*/
 	for (htlcp = htlc_list->next; htlcp; htlcp = htlcp->next) {
+		if (htlcp->access_extra.can_login)
+			continue;
 		hlwrite(htlcp, HTLS_HDR_ICON_CHANGE, 0, 1,
 			HTLC_DATA_UID, sizeof(uid), &uid);
 	}
