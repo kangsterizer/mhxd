@@ -1139,10 +1139,11 @@ rcv_news_mkdir (struct htlc_conn *htlc)
 				break;
 
 			case HTLC_DATA_FILE_NAME:
-				memcpy(dirname, dh_data, dh_len);
 				dirnamelen = dh_len;
 				if (dirnamelen > sizeof(dirname)-1)
 					dirnamelen = sizeof(dirname)-1;
+				memcpy(dirname, dh_data, dirnamelen);
+				dirname[dirnamelen] = 0;
 				break;
 			default:
 				break;
@@ -1212,10 +1213,10 @@ rcv_news_mkcategory (struct htlc_conn *htlc)
 				}
 				break;
 			case HTLC_DATA_NEWS_CATNAME:
-				memcpy(catname, dh_data, dh_len);
 				catnamelen = dh_len;
 				if (catnamelen > sizeof(catname)-1)
 					catnamelen = sizeof(catname)-1;
+				memcpy(catname, dh_data, catnamelen);
 				catname[catnamelen] = 0;
 				break;
 			default:
