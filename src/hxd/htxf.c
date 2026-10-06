@@ -1269,7 +1269,7 @@ got_hdr (struct htxf_conn *htxf, struct htxf_hdr *h)
 				socket_blocking(fd, 1);
 				htlcp->htxf_out[i]->fd = fd;
 				gettimeofday(&htlcp->htxf_out[i]->start, 0);
-				err = hxd_thread_create(&htxf->tid, &htxf->stack, get_thread, htlcp->htxf_out[i]);
+				err = hxd_thread_create(&htlcp->htxf_out[i]->tid, &htlcp->htxf_out[i]->stack, get_thread, htlcp->htxf_out[i]);
 				if (err) {
 					hxd_log("%s:%u -- htxf connection closed: thread error %s",
 						abuf, ntohs(htxf->sockaddr.SIN_PORT), strerror(err));
@@ -1280,7 +1280,6 @@ got_hdr (struct htxf_conn *htxf, struct htxf_hdr *h)
 					mutex_unlock(&htlcp->htxf_mutex);
 					return;
 				}
-				htlcp->htxf_out[i]->tid = htxf->tid;
 				mutex_unlock(&htlcp->htxf_mutex);
 				return;
 			}
@@ -1300,14 +1299,14 @@ got_hdr (struct htxf_conn *htxf, struct htxf_hdr *h)
 					mutex_unlock(&htlcp->htxf_mutex);
 					return;
 				}
+				htlcp->htxf_in[i]->total_size = ntohl(h->len);
 				socket_blocking(fd, 1);
 				htxf_free(fd);
 				hxd_fd_clr(fd, FDR|FDW);
 				hxd_fd_del(fd);
 				htlcp->htxf_in[i]->fd = fd;
-				htlcp->htxf_in[i]->total_size = ntohl(h->len);
 				gettimeofday(&htlcp->htxf_in[i]->start, 0);
-				err = hxd_thread_create(&htxf->tid, &htxf->stack, put_thread, htlcp->htxf_in[i]);
+				err = hxd_thread_create(&htlcp->htxf_in[i]->tid, &htlcp->htxf_in[i]->stack, put_thread, htlcp->htxf_in[i]);
 				if (err) {
 					socket_close(fd);
 					hxd_log("%s:%u -- htxf connection closed: thread error %s",
@@ -1319,7 +1318,6 @@ got_hdr (struct htxf_conn *htxf, struct htxf_hdr *h)
 					mutex_unlock(&htlcp->htxf_mutex);
 					return;
 				}
-				htlcp->htxf_in[i]->tid = htxf->tid;
 				mutex_unlock(&htlcp->htxf_mutex);
 				return;
 			}
