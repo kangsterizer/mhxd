@@ -712,44 +712,44 @@ get_thread (void *__arg)
 		retval = errno;
 		goto ret_nobuf;
 	}
+	/* Every way out of the send passes the pops below: jumping out of a
+	   pthread_cleanup_push scope leaves glibc a cleanup record on stack
+	   that later calls reuse, and pthread_exit then unwinds through it,
+	   corrupting this thread's descriptor ("free(): invalid pointer" when
+	   its stack is freed). */
 #if defined(CONFIG_HTXF_PTHREAD)
 	pthread_cleanup_push(free, buf);
 #endif
-	if (htxf->gone)
-		goto ret;
-
-	if (htxf->limit_out_Bps)
-		wp = watch_new();
+	if (!htxf->gone) {
+		if (htxf->limit_out_Bps)
+			wp = watch_new();
 #if defined(CONFIG_HTXF_PTHREAD)
-	pthread_cleanup_push(watch_delete, wp);
+		pthread_cleanup_push(watch_delete, wp);
 #endif
-
-	if (htxf->type == HTXF_TYPE_FILE) {
-		r = file_send(htxf, buf, wp);
-	} else if (htxf->type == HTXF_TYPE_BANNER) {
-		r = file_send(htxf, buf, wp);
-	} else if (htxf->type == HTXF_TYPE_FOLDER) {
-		r = folder_send(htxf, buf, wp);
-	} else {
-		r = -1;
-	}
-	if (r == -1)
-		goto ret_err;
-	else if (r == 1)
-		goto ret;
+		if (htxf->type == HTXF_TYPE_FILE) {
+			r = file_send(htxf, buf, wp);
+		} else if (htxf->type == HTXF_TYPE_BANNER) {
+			r = file_send(htxf, buf, wp);
+		} else if (htxf->type == HTXF_TYPE_FOLDER) {
+			r = folder_send(htxf, buf, wp);
+		} else {
+			r = -1;
+		}
+		retval = r == -1 ? errno : 0;
 #ifdef CONFIG_WINDOS_CLIENT_FIX
-	fd_select(s, 3);
+		if (r == 0)
+			fd_select(s, 3);
 #endif
-	retval = 0;
+#if defined(CONFIG_HTXF_PTHREAD)
+		/* watch */
+		pthread_cleanup_pop(1);
+		wp = 0;
+#endif
+	}
 #if defined(CONFIG_HTXF_PTHREAD)
 	/* buf */
 	pthread_cleanup_pop(1);
-	/* watch */
-	pthread_cleanup_pop(1);
 #endif
-	goto ret;
-ret_err:
-	retval = errno;
 ret:
 	t_free(buf);
 ret_nobuf:
