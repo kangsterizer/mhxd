@@ -612,8 +612,10 @@ free_htxf (struct htlc_conn *htlc, u_int16_t i, int get)
 {
 	mutex_lock(&htlc->htxf_mutex);
 	if (get) {
-		if (!htlc->htxf_out[i])
+		if (!htlc->htxf_out[i]) {
+			mutex_unlock(&htlc->htxf_mutex);
 			return 0;
+		}
 #if defined(CONFIG_HTXF_PTHREAD)
 		join_thread(htlc->htxf_out[i]->tid);
 #endif
@@ -625,8 +627,10 @@ free_htxf (struct htlc_conn *htlc, u_int16_t i, int get)
 		htlc->nr_gets--;
 		nr_gets--;
 	} else {
-		if (!htlc->htxf_in[i])
+		if (!htlc->htxf_in[i]) {
+			mutex_unlock(&htlc->htxf_mutex);
 			return 0;
+		}
 #if defined(CONFIG_HTXF_PTHREAD)
 		join_thread(htlc->htxf_in[i]->tid);
 #endif
