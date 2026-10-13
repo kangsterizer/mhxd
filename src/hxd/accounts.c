@@ -662,7 +662,7 @@ rcv_account_read (struct htlc_conn *htlc)
 void
 rcv_account_delete (struct htlc_conn *htlc)
 {
-	struct htlc_conn *htlcp;
+	struct htlc_conn *htlcp, *next;
 	u_int8_t login[32];
 	u_int16_t llen;
 	int err;
@@ -679,7 +679,9 @@ rcv_account_delete (struct htlc_conn *htlc)
 			return;
 		}
 		if (hxd_cfg.options.kick_transients) {
-			for (htlcp = htlc_list->next; htlcp; htlcp = htlcp->next) {
+			for (htlcp = htlc_list->next; htlcp; htlcp = next) {
+				/* htlc_close frees htlcp */
+				next = htlcp->next;
 				if (htlcp == htlc)
 					continue;
 				if (!strcmp(login, htlcp->login)) {
